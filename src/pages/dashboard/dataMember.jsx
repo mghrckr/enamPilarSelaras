@@ -19,21 +19,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchUsers, getKpi } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom"
-import Dropdown from "@/components/Dropdown";
-import DropdownOutbox from "@/components/DropdownOutbox";
-import ChatBox from "@/components/ChatBox";
-import statisticsCardsDataMember from "@/data/statistics-cards-dataMember";
-import DropdownAgenID from "@/components/DropdownAgenID";
-import DropdownKelompok from "@/components/DropdownKelompok";
-import DropdownStatus from "@/components/DropdownStatus";
-import DropdownAction from "@/components/DropdownAction";
 import {
   BanknotesIcon,
   UserPlusIcon,
   UsersIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/solid";
-import CustomPagination from "@/components/Pagination";
+
 
 export function DataMember() {
   const dispatch = useDispatch();
@@ -43,6 +35,17 @@ export function DataMember() {
   const [submitted, setSubmitted] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const kpis = useSelector((state) => state.kpi.kpi);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(kpis.total / 20); // Menggunakan 20 karena Anda ingin menampilkan 20 data per halaman
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  let pages = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pages.push(i);
+  }
 
   /*dropdown */
   const [selectedDatabase, setSelectedDatabase] = useState('');
@@ -119,15 +122,16 @@ export function DataMember() {
   const dataFilter = {
     "startDt": startDate,
     "endDt": endDate,
-    "page": 1,
+    "page": currentPage,
     "view": 20,
-    "status": statusValue, 
+    "status": statusValue,
     "mdn": formData.tujuan,
-    "shift": selectedShift 
+    "shift": selectedShift
   }
 
-  console.log(selectedShift);
-  console.log(kpis, 'ini kpi');
+  console.log(currentPage,'current');
+  console.log(dataFilter,'current');
+  // console.log(kpis, 'ini kpi');
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <Card>
@@ -139,7 +143,38 @@ export function DataMember() {
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
 
           <div class="grid grid-cols-2 gap-4">
-
+            <nav className="mt-4 flex justify-center">
+              <ul className="pagination">
+                <li className={`pagination-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <button
+                    className="pagination-link"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                </li>
+                {pages.map((page) => (
+                  <li key={page} className={`pagination-item ${currentPage === page ? 'active' : ''}`}>
+                    <button
+                      className="pagination-link"
+                      onClick={() => handlePageChange(page)}
+                    >
+                      {page}
+                    </button>
+                  </li>
+                ))}
+                <li className={`pagination-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                  <button
+                    className="pagination-link"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </li>
+              </ul>
+            </nav>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <div style={{ marginTop: '5px', marginLeft: '3px', }}>
@@ -447,7 +482,6 @@ export function DataMember() {
             </tbody>
           </table>
         </CardBody>
-        <CustomPagination />
       </Card>
     </div>
   );
