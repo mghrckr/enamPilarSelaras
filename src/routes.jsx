@@ -66,12 +66,12 @@ export const routes = [
         path: "/penjualanHariIni",
         element: <PenjualanHariIni />,
       },
-      {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "PPH",
-        path: "/pph",
-        element: <Pph />,
-      },
+      // {
+      //   icon: <RectangleStackIcon {...icon} />,
+      //   name: "PPH",
+      //   path: "/pph",
+      //   element: <Pph />,
+      // },
       {
         icon: <RectangleStackIcon {...icon} />,
         name: "CHECK SN",

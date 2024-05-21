@@ -7,7 +7,7 @@ function App() {
   return (
     <Provider store={store}>
       <Routes>
-        <Route path="*" element={<Navigate to="/dashboard/home" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard/saldoSupplier" replace />} />
         <Route path="/auth/*" element={<Auth />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
       </Routes>

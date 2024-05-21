@@ -99,8 +99,55 @@ const kpiState = {
   loading: true
 }
 
+const saldoSupplierState = {
+  saldoSupplier: [],
+  loading: true
+}
+
+const penjualanState = {
+  penjualan: [],
+  loading: true
+}
+
+const penjualanHariIniState = {
+  penjualanHariIni: [],
+  loading: true
+}
+
 const pickedDatabaseState = {
   pickedDatabase: 'Database',
+};
+
+const checkSNNullableState = {
+  checkSNNullable: 'Database',
+};
+
+const checkSNDuplicateState = {
+  checkSNDuplicate: 'Database',
+};
+
+const labaResellerState = {
+  labaReseller: [],
+};
+
+const labaResellerBotState = {
+  labaResellerBot: [],
+};
+
+const resellersState = {
+  resellers: [],
+};
+
+const labaHarianState = {
+  labaHarian: [],
+};
+
+const labaRugiState = {
+  labaRugi: [],
+};
+
+const suppliersState = {
+  suppliers: [],
 };
 
 // const loginState = {
@@ -140,6 +187,163 @@ const pickedDatabaseReducer = (state = pickedDatabaseState, actions) => {
       return state;
   }
 };
+
+const saldoSupplierReducer = (state = saldoSupplierState, actions) => {
+  switch (actions.type) {
+    case 'saldoSupplier/get':
+      return {
+        ...state,
+        saldoSupplier: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const penjualanReducer = (state = penjualanState, actions) => {
+  switch (actions.type) {
+    case 'penjualan/get':
+      return {
+        ...state,
+        penjualan: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const penjualanHariIniReducer = (state = penjualanHariIniState, actions) => {
+  switch (actions.type) {
+    case 'penjualanHariIni/get':
+      return {
+        ...state,
+        penjualanHariIni: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const checkSNNullableReducer = (state = checkSNNullableState, actions) => {
+  switch (actions.type) {
+    case 'checkSNNullable/get':
+      return {
+        ...state,
+        checkSNNullable: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const checkSNDuplicateReducer = (state = checkSNDuplicateState, actions) => {
+  switch (actions.type) {
+    case 'checkSNDuplicate/get':
+      return {
+        ...state,
+        checkSNDuplicate: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const labaResellerReducer = (state = labaResellerState, actions) => {
+  switch (actions.type) {
+    case 'labaReseller/get':
+      return {
+        ...state,
+        labaReseller: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const labaResellerBotReducer = (state = labaResellerBotState, actions) => {
+  switch (actions.type) {
+    case 'labaResellerBot/get':
+      return {
+        ...state,
+        labaResellerBot: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const labaRugiReducer = (state = labaRugiState, actions) => {
+  switch (actions.type) {
+    case 'labaRugi/get':
+      return {
+        ...state,
+        labaRugi: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const resellersReducer = (state = resellersState, actions) => {
+  switch (actions.type) {
+    case 'resellers/get':
+      return {
+        ...state,
+        resellers: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const labaHarianReducer = (state = labaHarianState, actions) => {
+  switch (actions.type) {
+    case 'labaHarian/get':
+      return {
+        ...state,
+        labaHarian: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const suppliersReducer = (state = suppliersState, actions) => {
+  switch (actions.type) {
+    case 'suppliers/get':
+      return {
+        ...state,
+        suppliers: actions.payload,
+        loading: false,
+      };
+    case 'suppliers/add':
+      return {
+        ...state,
+        suppliers: [...state.suppliers, actions.payload],
+      };
+    case 'suppliers/edit':
+      return {
+        ...state,
+        suppliers: Array.isArray(state.suppliers)
+          ? state.suppliers.map(supplier =>
+            supplier.id === actions.payload.id ? actions.payload : supplier
+          )
+          : state.suppliers,
+      };
+    default:
+      return state;
+  }
+}
 
 const productsReducer = (state = productsState, actions) => {
   switch (actions.type) {
@@ -238,6 +442,7 @@ const saldoAwalReducer = (state = saldoAwalState, actions) => {
       return state;
   }
 }
+
 
 const depositsReducer = (state = depositsState, actions) => {
   switch (actions.type) {
@@ -761,6 +966,17 @@ const rootReducer = combineReducers({
   // users: usersReducer,
   pickedDatabase: pickedDatabaseReducer,
   kpi: kpiReducer,
+  penjualan: penjualanReducer,
+  penjualanHariIni: penjualanHariIniReducer,
+  checkSNNullable: checkSNNullableReducer,
+  checkSNDuplicate: checkSNDuplicateReducer,
+  labaReseller: labaResellerReducer,
+  labaResellerBot: labaResellerBotReducer,
+  labaRugi: labaRugiReducer,
+  resellers: resellersReducer,
+  saldoSupplier: saldoSupplierReducer,
+  labaHarian: labaHarianReducer,
+  suppliers: suppliersReducer,
   dataTrxBank: dataTrxBankReducer,
   saldoAwal: saldoAwalReducer,
   dataTrxs: dataTrxsReducer,

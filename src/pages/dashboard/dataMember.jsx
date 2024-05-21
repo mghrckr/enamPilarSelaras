@@ -36,16 +36,9 @@ export function DataMember() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const kpis = useSelector((state) => state.kpi.kpi);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(kpis.total / 20); // Menggunakan 20 karena Anda ingin menampilkan 20 data per halaman
+  const [currentPage, setCurrentPage] = useState(1); // Pagination state
+  const [totalItems, setTotalItems] = useState(0); // Total items state
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-  let pages = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push(i);
-  }
 
   /*dropdown */
   const [selectedDatabase, setSelectedDatabase] = useState('');
@@ -100,14 +93,31 @@ export function DataMember() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(getKpi(dataFilter))
+    fetchData(currentPage);
   };
 
-  const users = useSelector((state) => state.users.users);
-
   useEffect(() => {
+    fetchData(currentPage);
+  }, [currentPage]);
+
+  const fetchData = (page) => {
+    const dataFilter = {
+      "startDt": startDate,
+      "endDt": endDate,
+      "page": page,
+      "view": 20,
+      "status": statusValue,
+      "mdn": formData.tujuan,
+      "shift": selectedShift
+    };
     dispatch(getKpi(dataFilter))
-  }, [dispatch]);
+      .then(response => {
+        console.log(response,'res');
+        setTotalItems(kpis.total); // Assuming the API returns total items
+      });
+  };
+  const totalPages = Math.ceil(totalItems / 20); // Calculate total pages
+ 
 
   let statusValue;
 
@@ -119,18 +129,17 @@ export function DataMember() {
     statusValue = 20;
   }
 
-  const dataFilter = {
-    "startDt": startDate,
-    "endDt": endDate,
-    "page": currentPage,
-    "view": 20,
-    "status": statusValue,
-    "mdn": formData.tujuan,
-    "shift": selectedShift
-  }
+  // const dataFilter = {
+  //   "startDt": startDate,
+  //   "endDt": endDate,
+  //   "page": 1,
+  //   "view": 20,
+  //   "status": statusValue,
+  //   "mdn": formData.tujuan,
+  //   "shift": selectedShift
+  // }
 
-  console.log(currentPage,'current');
-  console.log(dataFilter,'current');
+  // console.log(selectedShift);
   // console.log(kpis, 'ini kpi');
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -141,41 +150,6 @@ export function DataMember() {
           </Typography>
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-
-          <div class="grid grid-cols-2 gap-4">
-            <nav className="mt-4 flex justify-center">
-              <ul className="pagination">
-                <li className={`pagination-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                  <button
-                    className="pagination-link"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </button>
-                </li>
-                {pages.map((page) => (
-                  <li key={page} className={`pagination-item ${currentPage === page ? 'active' : ''}`}>
-                    <button
-                      className="pagination-link"
-                      onClick={() => handlePageChange(page)}
-                    >
-                      {page}
-                    </button>
-                  </li>
-                ))}
-                <li className={`pagination-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                  <button
-                    className="pagination-link"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
-          </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <div style={{ marginTop: '5px', marginLeft: '3px', }}>
               <label htmlFor="startDate">Start Date:</label>
@@ -371,116 +345,115 @@ export function DataMember() {
               SUBMIT
             </button>
           </div>
-          <table className="w-full min-w-[640px] table-auto">
-            <thead>
-              <tr>
-                {["NO", "ENTRY DATE", "STATUS DATE", "KODE PRODUK", "TUJUAN", 'SHIFT', 'STATUS', "KPI"].map((el) => (
-                  <th
-                    key={el}
-                    className="border-b border-blue-gray-50 py-3 px-5 text-left"
-                  >
-                    <Typography
-                      variant="small"
-                      className="text-[11px] font-bold uppercase text-blue-gray-400"
+          <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+            <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" style={{ borderCollapse: 'collapse' }}>
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                  {["NO", "KODE PRODUK", "ENTRY DATE", "STATUS DATE", "TUJUAN", 'SHIFT', 'STATUS', "KPI"].map((el, index) => (
+                    <th
+                      key={index}
+                      className="border-b border-blue-gray-50 py-3 px-5 text-center"
+                      style={{ width: index === 0 ? '3%' : index === 5 || index === 6 ? '5%' : '15%' }} // Lebar NO, SHIFT, dan STATUS lebih kecil
                     >
-                      {el}
-                    </Typography>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {kpis && kpis.data && kpis.data
-                .filter(kpi => ['20', '40', '52'].includes(kpi.status))
-                .map((kpi, index) => {
-                  const date = new Date(kpi.tanggal_entri);
+                      <Typography
+                        variant="small"
+                        className="text-[11px] font-bold uppercase text-blue-gray-400"
+                      >
+                        {el}
+                      </Typography>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {kpis && kpis.data && kpis.data
+                  .filter(kpi => ['20', '40', '52'].includes(kpi.status))
+                  .map((kpi, index) => {
+                    const date = new Date(kpi.tanggal_entri);
 
-                  const day = date.getDate().toString().padStart(2, "0");
-                  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-                  const year = date.getFullYear();
-                  const hours = date.getHours().toString().padStart(2, "0");
-                  const minutes = date.getMinutes().toString().padStart(2, "0");
-                  const seconds = date.getSeconds().toString().padStart(2, "0");
+                    const day = date.getDate().toString().padStart(2, "0");
+                    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                    const year = date.getFullYear();
+                    const hours = date.getHours().toString().padStart(2, "0");
+                    const minutes = date.getMinutes().toString().padStart(2, "0");
+                    const seconds = date.getSeconds().toString().padStart(2, "0");
 
-                  const formattedDate = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+                    const formattedDate = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 
-                  const dateStatus = new Date(kpi.tanggal_status);
+                    const dateStatus = new Date(kpi.tanggal_status);
 
-                  const dayStatus = date.getDate().toString().padStart(2, "0");
-                  const monthStatus = (date.getMonth() + 1).toString().padStart(2, "0");
-                  const yearStatus = date.getFullYear();
-                  const hoursStatus = date.getHours().toString().padStart(2, "0");
-                  const minutesStatus = date.getMinutes().toString().padStart(2, "0");
-                  const secondsStatus = date.getSeconds().toString().padStart(2, "0");
+                    const dayStatus = date.getDate().toString().padStart(2, "0");
+                    const monthStatus = (date.getMonth() + 1).toString().padStart(2, "0");
+                    const yearStatus = date.getFullYear();
+                    const hoursStatus = date.getHours().toString().padStart(2, "0");
+                    const minutesStatus = date.getMinutes().toString().padStart(2, "0");
+                    const secondsStatus = date.getSeconds().toString().padStart(2, "0");
 
-                  const formattedDateStatus = `${dayStatus}-${monthStatus}-${yearStatus} ${hoursStatus}:${minutesStatus}:${secondsStatus}`;
+                    const formattedDateStatus = `${dayStatus}-${monthStatus}-${yearStatus} ${hoursStatus}:${minutesStatus}:${secondsStatus}`;
 
-                  return (
-                    <tr key={index}>
-                      <td className='border-b border-blue-gray-50' >
-                        <div className="flex items-center gap-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-semibold ml-5"
-                          >
-                            {index + 1}
-                          </Typography>
-                        </div>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {formattedDate}
-                        </Typography>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {formattedDateStatus}
-                        </Typography>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
+                    return (
+                      <tr key={index} className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+                        <td
+                          className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                          style={{ padding: '10px 5px' }} // Set padding
+                        >
+                          {index + 1}
+                        </td>
+                        <td
+                          className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                          style={{ padding: '10px 5px' }} // Set padding
+                        >
                           {kpi.kode_produk}
-                        </Typography>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {kpi.tujuan}
-                        </Typography>
-                      </td>
-
-                      <td className='border-b border-blue-gray-50'>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {kpi.shift}
-                        </Typography>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        {kpi.status === '20' && (
-                          <span className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                            Sukses
-                          </span>
-                        )}
-                        {kpi.status === '52' && (
-                          <span className="bg-orange-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                            Tujuan Salah
-                          </span>
-                        )}
-                        {kpi.status === '40' && (
-                          <span className="bg-red-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                            Gagal
-                          </span>
-                        )}
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        <Typography className="text-xs font-semibold text-blue-gray-600">
-                          {kpi.waktu_respon}
-                        </Typography>
-                      </td>
-                    </tr>
-                  )
-                })}
-            </tbody>
-          </table>
+                        </td>
+                        <td className="px-6 py-4" style={{ padding: '10px 5px' }}>{formattedDate}</td>
+                        <td className="px-6 py-4" style={{ padding: '10px 5px' }}>{formattedDateStatus}</td>
+                        <td className="px-6 py-4" style={{ padding: '10px 5px' }}>{kpi.tujuan}</td>
+                        <td className="px-6 py-4" style={{ padding: '10px 5px' }}>{kpi.shift}</td>
+                        <td className="px-6 py-4" style={{ padding: '10px 5px' }}>
+                          {kpi.status === '20' && (
+                            <span className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                              Sukses
+                            </span>
+                          )}
+                          {kpi.status === '52' && (
+                            <span className="bg-orange-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                              Tujuan Salah
+                            </span>
+                          )}
+                          {kpi.status === '40' && (
+                            <span className="bg-red-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                              Gagal
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4" style={{ padding: '10px 5px' }}>{kpi.waktu_respon}</td>
+                      </tr>
+                    )
+                  })}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex justify-between items-center p-4">
+            <Button
+              variant="outlined"
+              color="blue"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              Previous
+            </Button>
+            <Typography variant="body2">
+              Page {currentPage} of {totalPages}
+            </Typography>
+            <Button
+              variant="outlined"
+              color="blue"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Next
+            </Button>
+          </div>
         </CardBody>
       </Card>
     </div>

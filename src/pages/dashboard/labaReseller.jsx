@@ -16,7 +16,7 @@
 // import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { authorsTableData, projectsTableData } from "@/data";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchDataTrxBank, fetchDataTrxSPL, fetchUsers } from "@/store/actionCreators";
+import { fetchDataTrxBank, fetchDataTrxSPL, fetchLabaReseller, fetchLabaResellerBot, fetchResellers, fetchUsers } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom"
 // import React from "react";
@@ -58,37 +58,58 @@ export function LabaReseller() {
   let navigate = useNavigate()
   let [startDate, setStartDate] = useState('');
   let [endDate, setEndDate] = useState('');
-  let [startDateBank, setStartDateBank] = useState('');
-  let [endDateBank, setEndDateBank] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [submittedBank, setSubmittedBank] = useState(false);
-  const [submitLoadingBank, setSubmitLoadingBank] = useState(false);
-  const [totalNominalSPL, setTotalNominalSPL] = useState(0);
-  const [totalNominalBank, setTotalNominalBank] = useState(0);
 
-  const dataTrxSPL = useSelector((state) => state.dataTrxSPL.dataTrxSPL);
-  const dataTrxBank = useSelector((state) => state.dataTrxBank.dataTrxBank);
-  let storedStartDate = JSON.parse(localStorage.getItem('startLocal'))
-  let storedEndDates = JSON.parse(localStorage.getItem('endLocal'))
-  let storedStartDateBank = JSON.parse(localStorage.getItem('startLocalBank'))
-  let storedEndDatesBank = JSON.parse(localStorage.getItem('endLocalBank'))
+
+
+  const labaReseller = useSelector((state) => state.labaReseller.labaReseller);
+  const labaResellerBot = useSelector((state) => state.labaResellerBot.labaResellerBot);
+  const resellers = useSelector((state) => state.resellers.resellers);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
+  const filteredData = labaResellerBot?.data?.filter((laba) =>
+    laba.kode_produk.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const currentData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  /*dropdown */
+  const [selectedCode, setSelectedCode] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleDatabaseClick = (code) => {
+    setSelectedCode(code);
+    setIsOpen(false);
+  };
+  /*dropdown */
+
   const formatNumber = (number) => {
     if (number === undefined) {
       return "";
     }
     return number.toLocaleString();
   };
-  function convertDateFormat(dateString) {
-    const [year, month, day] = dateString.split('-');
-    return `${year}${month}${day}`;
-  }
-
-  const startFormattedDate = convertDateFormat(startDate);
-  const endFormattedDate = convertDateFormat(endDate);
-  const startFormattedDateBank = convertDateFormat(startDateBank);
-  const endFormattedDateBank = convertDateFormat(endDateBank);
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -96,7 +117,8 @@ export function LabaReseller() {
     if (startDate && endDate) {
       setSubmitted(true);
       setSubmitLoading(true);
-      dispatch(fetchDataTrxSPL(startFormattedDate, endFormattedDate))
+      dispatch(fetchLabaReseller(startDate, endDate, selectedCode))
+      dispatch(fetchLabaResellerBot(startDate, endDate, selectedCode))
         .then(() => {
           setSubmitLoading(false);
         });
@@ -114,41 +136,13 @@ export function LabaReseller() {
     window.location.reload()
   }
 
-  const handleSubmitBank = (e) => {
-    e.preventDefault();
-
-    if (startDateBank && endDateBank) {
-      setSubmittedBank(true);
-      setSubmitLoadingBank(true);
-      dispatch(fetchDataTrxBank(startFormattedDateBank, endFormattedDateBank))
-        .then(() => {
-          setSubmitLoadingBank(false);
-        });
-    } else {
-      console.log('kocak');
-    }
-  };
-
-  // const users = useSelector((state) => state.users.users);
-  useEffect(() => {
-    dispatch(fetchDataTrxSPL(storedStartDate, storedEndDates));
-    dispatch(fetchDataTrxBank(storedStartDateBank, storedEndDatesBank));
-  }, [dispatch, storedStartDate, storedEndDates, storedStartDateBank, storedEndDatesBank]);
-  console.log(dataTrxBank, 'yoyoyoyoyoyo');
 
   useEffect(() => {
-    if (dataTrxSPL?.data) {
-      const total = dataTrxSPL.data.reduce((acc, trx) => acc + trx.total_nominal, 0);
-      setTotalNominalSPL(total);
-    }
-  }, [dataTrxSPL]);
-
-  useEffect(() => {
-    if (dataTrxBank?.data) {
-      const total = dataTrxBank.data.reduce((acc, trx) => acc + trx.total_nominal, 0);
-      setTotalNominalBank(total);
-    }
-  }, [dataTrxBank]);
+    dispatch(fetchLabaReseller(startDate, endDate, selectedCode))
+    dispatch(fetchLabaResellerBot(startDate, endDate, selectedCode))
+    dispatch(fetchResellers());
+  }, [dispatch]);
+  console.log(labaResellerBot, 'yoyoyoyoyoyo');
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -161,7 +155,7 @@ export function LabaReseller() {
         </CardHeader>
         <CardBody className="px-0 pt-0 pb-2 flex flex-col gap-6">
           {/* <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3"> */}
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+          {/* <div style={{ display: 'flex', justifyContent: 'center' }}>  */} <div className="mb-6 ml-2 mr-2 grid gap-y-10 gap-x-2 md:grid-cols-2 xl:grid-cols-5 flex justify-center">
             <div style={{ marginTop: '5px', marginLeft: '3px', }}>
               <label htmlFor="startDate">Start Date:</label>
               <input
@@ -185,7 +179,51 @@ export function LabaReseller() {
               />
             </div>
             <DropdownAgenID />
-            <DropdownKodeReseller />
+            {/*dropdown */}
+
+            <div className="relative inline-block text-left ">
+              <button
+                id="dropdownDefaultButton"
+                data-dropdown-toggle="dropdown"
+                className="flex items-center ml-4 text-white bg-black hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-brown-300 dark:focus:ring-brown-800 shadow-lg shadow-brown-500/50 dark:shadow-lg dark:shadow-brown-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center  mb-2"
+                type="button"
+                onClick={toggleDropdown}
+                style={{ backgroundColor: 'black' }}
+              >
+                <span>
+                  {selectedCode === '' ? 'KODE RESELLER' : selectedCode}
+                </span>
+                <svg
+                  className={`w-2.5 h-2.5 ml-3 transition-transform transform ${isOpen ? 'rotate-180' : ''}`}
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 10 6"
+                >
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
+                </svg>
+              </button>
+              <div
+                id="dropdown"
+                className={`z-10 absolute ${isOpen ? 'block' : 'hidden'} bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}
+                style={{ top: 'calc(100% + 5px)', left: 0 }}
+              >
+                <ul className="py-2 text-sm text-gray-700 dark:text-gray-200 max-h-60 overflow-y-auto" aria-labelledby="dropdownDefaultButton">
+                  {resellers?.data?.map((reseller, index) => (
+                    <li key={index}>
+                      <span
+                        className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                        onClick={() => handleDatabaseClick(`${reseller.kode}`)}
+                      >
+                        {reseller.kode} - {reseller.nama}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/*dropdown */}
             <button
               onClick={handleSubmit}
               className="shadow-lg shadow-black-800/80 rounded-lg gradient text-white px-4 py-2 text-sm rounded font-medium focus:ring ring-black ring-opacity-10 gradient element-to-rotate"
@@ -198,170 +236,93 @@ export function LabaReseller() {
             </button>
           </div>
           <Card className="border border-blue-gray-100 shadow-sm">
-            <CardBody className="overflow-x-scroll pt-0">
-              <table className="w-full min-w-[640px] table-auto">
-                <thead>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[64  0px] table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
-                    {["RESELLER", "TOTAL TRANSAKSI", "TOTAL PENJUALAN", "TOTAL PEMBELIAN", "TOTAL LABA"].map(
-                      (el) => (
-                        <th
-                          key={el}
-                          className="border-b border-blue-gray-50 py-3 px-6 text-left"
-                        >
-                          <Typography
-                            variant="small"
-                            className="text-[11px] font-medium uppercase text-blue-gray-400"
-                          >
-                            {el}
-                          </Typography>
-                        </th>
-                      )
-                    )}
+                    {["RESELLER", "TOTAL TRANSAKSI", "TOTAL PENJUALAN", "TOTAL PEMBELIAN", "TOTAL LABA"].map((el) => (
+                      <th
+                        key={el}
+                        className="border-b border-blue-gray-50 py-3 px-5 text-center"
+                        style={{ width: '20%' }}
+                      >
+                        <span className="text-[11px] font-bold uppercase text-blue-gray-400">
+                          {el}
+                        </span>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {dataTrxSPL?.data?.map((trxSPL, index) => (
-                    <tr key={index}>
-                      <td className='border-b border-blue-gray-50'>
-                        <div className="flex items-center gap-4 ml-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-bold"
-                          >
-                            {index + 1}
-                          </Typography>
-                        </div>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        <div className="flex items-center gap-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-bold"
-                          >
-                            {trxSPL.name}
-                          </Typography>
-                        </div>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        Rp. {formatNumber(trxSPL.total_nominal)}
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        Rp. {formatNumber(trxSPL.total_nominal)}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-                        TOTAL
-                      </Typography>
+                  {/* {labaReseller?.data?.map((laba, index) => ( */}
+                  <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      {labaReseller?.data?.nama}
                     </td>
-                    <td className='border-b border-blue-gray-50'>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-                        Rp. {formatNumber(totalNominalSPL)}
-                      </Typography>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-
-                      </Typography>
-                    </td>
+                    <td className="px-6 py-4">{formatNumber(labaReseller?.data?.trx)}</td>
+                    <td className="px-6 py-4">{formatNumber(labaReseller?.data?.jual)}</td>
+                    <td className="px-6 py-4">{formatNumber(labaReseller?.data?.beli)}</td>
+                    <td className="px-6 py-4">{formatNumber(labaReseller?.data?.laba)}</td>
                   </tr>
+                  {/* ))} */}
                 </tbody>
               </table>
-            </CardBody>
+            </div>
           </Card>
           <Card className="ooverflow-hidden border border-blue-gray-100 shadow-sm">
-            <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-              <div className="relative ml-2 mr-8 mt-2">
-                <i className="absolute fa fa-search text-gray-400 top-3 left-4" />
-                <input
-                  type="text"
-                  className="bg-white h-10 px-12 rounded-lg focus:outline-none hover:cursor-pointer border border-gray-300"
-                  name=""
-                  style={{backgroundColor: '#F0F0F0'}}
-                />
-              </div>
-              <table className="w-full min-w-[640px] table-auto">
-                <thead>
+            <div className="relative ml-2 mr-8 mt-2 mb-4">
+              <i className="absolute fa fa-search text-gray-400 top-3 left-4" />
+              <input
+                type="text"
+                className="bg-white h-10 px-12 rounded-lg focus:outline-none hover:cursor-pointer border border-gray-300"
+                name=""
+                style={{ backgroundColor: '#F0F0F0' }}
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[64  0px] table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
-                    {["KODE PRODUK", "TRANSAKSI", "LABA"].map(
-                      (el) => (
-                        <th
-                          key={el}
-                          className="border-b border-blue-gray-50 py-3 px-6 text-left"
-                        >
-                          <Typography
-                            variant="small"
-                            className="text-[11px] font-medium uppercase text-blue-gray-400"
-                          >
-                            {el}
-                          </Typography>
-                        </th>
-                      )
-                    )}
+                    {["KODE PRODUK", "TRX", "LABA"].map((el) => (
+                      <th
+                        key={el}
+                        className="border-b border-blue-gray-50 py-3 px-5 text-center"
+                        style={{ width: '40%' }}
+                      >
+                        <span className="text-[11px] font-bold uppercase text-blue-gray-400">
+                          {el}
+                        </span>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {dataTrxBank?.data?.map((trxBank, index) => (
-                    <tr key={index}>
-                      <td className='border-b border-blue-gray-50'>
-                        <div className="flex items-center gap-4 ml-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-bold"
-                          >
-                            {index + 1}
-                          </Typography>
-                        </div>
+                  {currentData?.map((laba, index) => (
+                    <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+                      <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        {laba.kode_produk}
                       </td>
-                      <td className='border-b border-blue-gray-50'>
-                        <div className="flex items-center gap-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-bold"
-                          >
-                            {trxBank.name}
-                          </Typography>
-                        </div>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        Rp. {formatNumber(trxBank.total_nominal)}
-                      </td>
+                      <td className="px-6 py-4">{formatNumber(laba.trx)}</td>
+                      <td className="px-6 py-4">{formatNumber(laba.laba)}</td>
                     </tr>
                   ))}
-                  <tr>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-                        TOTAL
-                      </Typography>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-                        Rp. {formatNumber(totalNominalBank)}
-                      </Typography>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-
-                      </Typography>
-                    </td>
-                  </tr>
                 </tbody>
               </table>
-            </CardBody>
+              <div className="flex justify-center mt-4 mb-4">
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <button
+                    key={index}
+                    className={`mx-1 px-3 py-1 rounded-lg ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                      }`}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
           </Card>
           {/* </div> */}
         </CardBody>

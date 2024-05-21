@@ -23,6 +23,13 @@ import Swal from 'sweetalert2';
 //   };
 // }
 
+export const formatNumber = (number) => {
+    if (number === undefined) {
+        return "";
+    }
+    return number.toLocaleString();
+};
+
 export const setPickedDatabase = (database) => {
     return {
         type: 'SET_PICKED_DATABASE',
@@ -49,6 +56,263 @@ export const getKpi = (dataFilter) => {
 
             const data = await response.json();
             dispatch({ type: 'kpi/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+};
+
+export const fetchSaldoSupplier = () => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/supplier/re/balance`, {
+                method: "GET",
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'saldoSupplier/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchPenjualan = (startDate, endDate) => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/sales/ra/periode?startDate=${startDate}&endDate=${endDate}`, {
+                method: "GET",
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'penjualan/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchPenjualanHariIni = () => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/sales/re`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'penjualanHariIni/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchCheckSNNullable = () => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/sn/null/ra`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'checkSNNullable/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchCheckSNDuplicate = () => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/sn/duplicate/ra`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'checkSNDuplicate/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchLabaReseller = (startDate, endDate, selectedCode) => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/reseller/re/sum?startDt=${startDate}&endDt=${endDate}&id=${selectedCode}`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'labaReseller/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchLabaResellerBot = (startDate, endDate, selectedCode) => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/reseller/re/laba?startDt=${startDate}&endDt=${endDate}&id=${selectedCode}`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'labaResellerBot/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchLabaRugi = (startDate, endDate) => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/reseller/ra/labarugi?startDt=${startDate}&endDt=${endDate}`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'labaRugi/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchResellers = () => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/reseller/re/list`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'resellers/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchLabaHarian = () => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/reseller/re/laba/hourly`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'labaHarian/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchSuppliers = () => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/supplier/de`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'suppliers/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const addSupplier = (formData) => {
+    // console.log('masuk');
+    // console.log(formData, 'form');
+    return async (dispatch) => {
+        try {
+            const response = await fetch(`${BASE_URL}/supplier/de/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to add supplier');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'suppliers/add', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+};
+
+export const editSupplier = (formData) => {
+    return async (dispatch) => {
+        try {
+            const response = await fetch(`${BASE_URL}/supplier/de/update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to edit supplier');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'suppliers/edit', payload: data });
         } catch (error) {
             console.log(error.message);
         }

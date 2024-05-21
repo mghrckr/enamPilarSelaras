@@ -1,72 +1,53 @@
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Typography,
-  Avatar,
-  Chip,
-  Tooltip,
-  Progress,
-  Button
-} from "@material-tailwind/react";
-import { StatisticsCard } from "@/widgets/cards";
-import {
-  statisticsCardsData,
-} from "@/data";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { authorsTableData, projectsTableData } from "@/data";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchUsers } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from "react-router-dom"
-import Dropdown from "@/components/Dropdown";
-import DropdownOutbox from "@/components/DropdownOutbox";
-import ChatBox from "@/components/ChatBox";
-import statisticsCardsDataMember from "@/data/statistics-cards-dataMember";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { fetchSaldoSupplier, formatNumber } from "@/store/actionCreators";
+import { Card, CardHeader, CardBody, Typography, Button } from "@material-tailwind/react";
+import { BanknotesIcon, TicketIcon } from "@heroicons/react/24/solid";
+import { StatisticsCard } from "@/widgets/cards";
 import DropdownAgenID from "@/components/DropdownAgenID";
-import DropdownKelompok from "@/components/DropdownKelompok";
-import DropdownStatus from "@/components/DropdownStatus";
-import DropdownAction from "@/components/DropdownAction";
-import {
-  BanknotesIcon,
-  UserPlusIcon,
-  UsersIcon,
-  ChartBarIcon,
-} from "@heroicons/react/24/solid";
-import CustomPagination from "@/components/Pagination";
 
 export function DataSupplier() {
   const dispatch = useDispatch();
-  let navigate = useNavigate()
-  let [startDate, setStartDate] = useState('');
-  let [endDate, setEndDate] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
+  const navigate = useNavigate();
+  const users = useSelector((state) => state.users.users);
+  const saldoSupplier = useSelector((state) => state.saldoSupplier.saldoSupplier);
+  const totalTransaksi = saldoSupplier?.data?.reduce((total, saldo) => total + saldo.total_transaksi, 0);
+  const totalPemakaianSaldo = saldoSupplier?.data?.reduce((total, saldo) => total + saldo.pemakaian_saldo, 0);
+  const totalSaldoSekarang = saldoSupplier?.data?.reduce((total, saldo) => total + saldo.saldo_sekarang, 0);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-    if (startDate && endDate) {
-      setSubmitted(true);
-      setSubmitLoading(true);
-      dispatch(fetchTrxs(startDate, endDate))
-        .then(() => {
-          setSubmitLoading(false);
-        });
-    } else {
-      console.log('kocak');
+  const filteredData = useMemo(() => {
+    if (!searchQuery) {
+      return saldoSupplier?.data || [];
     }
+    return saldoSupplier?.data?.filter((saldo) =>
+      saldo.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, saldoSupplier?.data]);
+
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredData.slice(startIndex, endIndex);
+  }, [currentPage, filteredData]);
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  const handleSearchInputChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
   };
 
-  const users = useSelector((state) => state.users.users);
-
   useEffect(() => {
-    dispatch(fetchUsers());
+    dispatch(fetchSaldoSupplier());
   }, [dispatch]);
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
-      {/* {JSON.stringify(users.data)} */}
       <Card>
         <CardHeader variant="gradient" color="gray" className="mb-8 p-6">
           <Typography variant="h6" color="white">
@@ -81,150 +62,98 @@ export function DataSupplier() {
               <input
                 type="text"
                 className="bg-white h-14 w-full px-12 rounded-lg focus:outline-none hover:cursor-pointer border border-gray-300"
-                name=""
+                style={{ backgroundColor: '#F0F0F0' }}
+                value={searchQuery}
+                onChange={handleSearchInputChange}
+                placeholder="Search..."
               />
-              <span className="absolute top-4 right-5 border-l pl-4">
-                <i className="fa fa-microphone text-gray-500 hover:text-green-500 hover:cursor-pointer" />
-              </span>
             </div>
           </div>
           <div className="mb-6 ml-4 mr-4 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-3 flex justify-center">
             <StatisticsCard
               key="Saldo Member Aktif"
-              value="RP. 12.313.524.241"
+              value={`Rp. ${formatNumber(totalSaldoSekarang)}`}
               title={<strong>Total Saldo</strong>}
               icon={React.createElement(BanknotesIcon, {
-                className: "w-6 h-6 text-white",
+                className: "w-14 h-14 text-white",
               })}
             />
             <StatisticsCard
               key="Saldo Member Aktif"
-              value="RP. 12.313.524.241"
+              value={`Rp. ${formatNumber(totalPemakaianSaldo)}`}
               title={<strong>Total Pemakaian Saldo</strong>}
               icon={React.createElement(BanknotesIcon, {
-                className: "w-6 h-6 text-white",
+                className: "w-14 h-14 text-white",
               })}
             />
             <StatisticsCard
               key="Saldo Member Aktif"
-              value="RP. 12.313.524.241"
+              value={formatNumber(totalTransaksi)}
               title={<strong>Total Transaksi</strong>}
-              icon={React.createElement(BanknotesIcon, {
-                className: "w-6 h-6 text-white",
+              icon={React.createElement(TicketIcon, {
+                className: "w-14 h-14 text-white",
               })}
             />
           </div>
-          <table className="w-full min-w-[640px] table-auto">
-            <thead>
-              <tr>
-                {["LABEL", "TOTAL TRANSAKSI", "PEMAKAIAN SALDO", "SALDO SEKARANG"].map((el) => (
-                  <th
-                    key={el}
-                    className="border-b border-blue-gray-50 py-3 px-5 text-center"
-                  >
-                    <Typography
-                      variant="small"
-                      className="text-[11px] font-bold uppercase text-blue-gray-400"
+          <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+            <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" style={{ borderCollapse: 'collapse' }}>
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                  {["LABEL", "TOTAL TRANSAKSI", "PEMAKAIAN SALDO", "SALDO SEKARANG"].map((el) => (
+                    <th
+                      key={el}
+                      className="border-b border-blue-gray-50 py-3 px-5 text-center"
+                      style={{ width: '25%' }}
                     >
-                      {el}
-                    </Typography>
-                  </th>
+                      <Typography
+                        variant="small"
+                        className="text-[11px] font-bold uppercase text-blue-gray-400"
+                      >
+                        {el}
+                      </Typography>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedData?.map((saldo, index) => (
+                  <tr key={index} className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+                    <td
+                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+                      style={{ width: '25%', padding: '10px 5px' }}
+                    >
+                      {saldo.label}
+                    </td>
+                    <td className="px-6 py-4" style={{ width: '25%', padding: '10px 5px' }}>{saldo.total_transaksi}</td>
+                    <td className="px-6 py-4" style={{ width: '25%', padding: '10px 5px' }}>Rp. {formatNumber(saldo.pemakaian_saldo)}</td>
+                    <td className="px-6 py-4" style={{ width: '25%', padding: '10px 5px' }}>Rp. {formatNumber(saldo.saldo_sekarang)}</td>
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className='border-b border-blue-gray-50' style={{ width: '25%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50' style={{ width: '25%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50' style={{ width: '25%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50' style={{ width: '25%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              <tr>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              <tr>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              <tr>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
+          <div className="flex justify-between items-center p-4">
+            <Button
+              variant="outlined"
+              color="blue"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Typography variant="body2">
+              Page {currentPage} of {totalPages}
+            </Typography>
+            <Button
+              variant="outlined"
+              color="blue"
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
         </CardBody>
-        <CustomPagination />
       </Card>
     </div>
   );

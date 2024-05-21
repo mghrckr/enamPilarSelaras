@@ -16,7 +16,7 @@
 // import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { authorsTableData, projectsTableData } from "@/data";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchDataTrxBank, fetchDataTrxSPL, fetchUsers } from "@/store/actionCreators";
+import { fetchCheckSNDuplicate, fetchCheckSNNullable, fetchDataTrxBank, fetchDataTrxSPL, fetchUsers, formatNumber } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom"
 // import React from "react";
@@ -51,6 +51,8 @@ import DropdownAction from "@/components/DropdownAction";
 import statisticsCardsDataKomisi from "@/data/statistics-cards-dataKomisi copy";
 import { StatisticsCard } from "@/widgets/cards";
 import DropdownAgenID from "@/components/DropdownAgenID";
+import { styled } from '@mui/system';
+
 
 export function CheckSN() {
   const dispatch = useDispatch();
@@ -66,88 +68,42 @@ export function CheckSN() {
   const [totalNominalSPL, setTotalNominalSPL] = useState(0);
   const [totalNominalBank, setTotalNominalBank] = useState(0);
 
-  const dataTrxSPL = useSelector((state) => state.dataTrxSPL.dataTrxSPL);
-  const dataTrxBank = useSelector((state) => state.dataTrxBank.dataTrxBank);
-  let storedStartDate = JSON.parse(localStorage.getItem('startLocal'))
-  let storedEndDates = JSON.parse(localStorage.getItem('endLocal'))
-  let storedStartDateBank = JSON.parse(localStorage.getItem('startLocalBank'))
-  let storedEndDatesBank = JSON.parse(localStorage.getItem('endLocalBank'))
-  const formatNumber = (number) => {
-    if (number === undefined) {
-      return "";
+  const checkSNNullable = useSelector((state) => state.checkSNNullable.checkSNNullable);
+  const checkSNDuplicate = useSelector((state) => state.checkSNDuplicate.checkSNDuplicate);
+
+  const Marquee = styled('div')({
+    display: 'inline-block',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    width: '100%', // or set a fixed width if you want
+  });
+  
+  const MarqueeContent = styled('div')({
+    display: 'inline-block',
+    animation: 'marquee 10s linear infinite',
+    '@keyframes marquee': {
+      '0%': {
+        transform: 'translateX(100%)',
+      },
+      '100%': {
+        transform: 'translateX(0%)',
+      }
     }
-    return number.toLocaleString();
-  };
-  function convertDateFormat(dateString) {
-    const [year, month, day] = dateString.split('-');
-    return `${year}${month}${day}`;
-  }
+  });
 
-  const startFormattedDate = convertDateFormat(startDate);
-  const endFormattedDate = convertDateFormat(endDate);
-  const startFormattedDateBank = convertDateFormat(startDateBank);
-  const endFormattedDateBank = convertDateFormat(endDateBank);
-
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (startDate && endDate) {
-      setSubmitted(true);
-      setSubmitLoading(true);
-      dispatch(fetchDataTrxSPL(startFormattedDate, endFormattedDate))
-        .then(() => {
-          setSubmitLoading(false);
-        });
-    } else {
-      console.log('kocak');
-    }
-  };
 
   const refreshh = (e) => {
     e.preventDefault();
-    localStorage.removeItem('startLocal');
-    localStorage.removeItem('endLocal');
-    localStorage.removeItem('startLocalBank');
-    localStorage.removeItem('endLocalBank');
     window.location.reload()
   }
 
-  const handleSubmitBank = (e) => {
-    e.preventDefault();
-
-    if (startDateBank && endDateBank) {
-      setSubmittedBank(true);
-      setSubmitLoadingBank(true);
-      dispatch(fetchDataTrxBank(startFormattedDateBank, endFormattedDateBank))
-        .then(() => {
-          setSubmitLoadingBank(false);
-        });
-    } else {
-      console.log('kocak');
-    }
-  };
-
-  // const users = useSelector((state) => state.users.users);
   useEffect(() => {
-    dispatch(fetchDataTrxSPL(storedStartDate, storedEndDates));
-    dispatch(fetchDataTrxBank(storedStartDateBank, storedEndDatesBank));
-  }, [dispatch, storedStartDate, storedEndDates, storedStartDateBank, storedEndDatesBank]);
-  console.log(dataTrxBank, 'yoyoyoyoyoyo');
+    dispatch(fetchCheckSNNullable());
+    dispatch(fetchCheckSNDuplicate());
+  }, [dispatch]);
 
-  useEffect(() => {
-    if (dataTrxSPL?.data) {
-      const total = dataTrxSPL.data.reduce((acc, trx) => acc + trx.total_nominal, 0);
-      setTotalNominalSPL(total);
-    }
-  }, [dataTrxSPL]);
-
-  useEffect(() => {
-    if (dataTrxBank?.data) {
-      const total = dataTrxBank.data.reduce((acc, trx) => acc + trx.total_nominal, 0);
-      setTotalNominalBank(total);
-    }
-  }, [dataTrxBank]);
+  console.log(checkSNNullable, 'yoyoyoyoyoyo');
+  console.log(checkSNDuplicate, 'ZZZZZZZZZZ');
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -164,163 +120,92 @@ export function CheckSN() {
             <DropdownAgenID />
           </div>
           <Card className="border border-blue-gray-100 shadow-sm">
-            <CardBody className="overflow-x-scroll pt-0">
-              <table className="w-full min-w-[640px] table-auto">
-                <thead>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[64  0px] table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
-                    {["No", "KODE RESELLER", "KODE PRODUK", "TUJUAN", "TANGGAL ENTRY", "TANGGAL STATUS", "SUPPLIER", "SN", "SELISIH WAKTU"].map(
-                      (el) => (
-                        <th
-                          key={el}
-                          className="border-b border-blue-gray-50 py-3 px-6 text-left"
-                        >
-                          <Typography
-                            variant="small"
-                            className="text-[11px] font-medium uppercase text-blue-gray-400"
-                          >
-                            {el}
-                          </Typography>
-                        </th>
-                      )
-                    )}
+                    {["NO", "KODE RESELLER", "KODE PRODUK", "TUJUAN", "TGL ENTRI", "TGL STATUS", "SN", "SELISIH WAKTU"].map((el) => (
+                      <th
+                        key={el}
+                        className="border-b border-blue-gray-50 py-3 px-5 text-center"
+                        style={{ width: '16.6%' }}
+                      >
+                        <span className="text-[11px] font-bold uppercase text-blue-gray-400">
+                          {el}
+                        </span>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {dataTrxSPL?.data?.map((trxSPL, index) => (
-                    <tr key={index}>
-                      <td className='border-b border-blue-gray-50'>
-                        <div className="flex items-center gap-4 ml-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-bold"
-                          >
-                            {index + 1}
-                          </Typography>
-                        </div>
+                  {checkSNNullable?.data?.map((sn, index) => (
+                    <tr key={index} className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+                      <td className="px-6 py-4">{index + 1}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        {sn.kode_reseller}
                       </td>
-                      <td className='border-b border-blue-gray-50'>
-                        <div className="flex items-center gap-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-bold"
-                          >
-                            {trxSPL.name}
-                          </Typography>
-                        </div>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        Rp. {formatNumber(trxSPL.total_nominal)}
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        Rp. {formatNumber(trxSPL.total_nominal)}
-                      </td>
+                      <td className="px-6 py-4">{sn.kode_produk}</td>
+                      <td className="px-6 py-4">{sn.tujuan}</td>
+                      <td className="px-6 py-4">{sn.tgl_entri}</td>
+                      <td className="px-6 py-4">{sn.tgl_status}</td>
+                      <td className="px-6 py-4">{sn.sn}</td>
+                      <td className="px-6 py-4">{sn.selisih_waktu}</td>
                     </tr>
                   ))}
-                  <tr>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-                        TOTAL
-                      </Typography>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-                        Rp. {formatNumber(totalNominalSPL)}
-                      </Typography>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-
-                      </Typography>
-                    </td>
-                  </tr>
                 </tbody>
               </table>
-            </CardBody>
+            </div>
           </Card>
           <Card className="ooverflow-hidden border border-blue-gray-100 shadow-sm">
-            <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-              <table className="w-full min-w-[640px] table-auto">
-                <thead>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[64  0px] table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
-                    {["No", "sn tujuan", "tujuan", "total"].map(
-                      (el) => (
-                        <th
-                          key={el}
-                          className="border-b border-blue-gray-50 py-3 px-6 text-left"
-                        >
-                          <Typography
-                            variant="small"
-                            className="text-[11px] font-medium uppercase text-blue-gray-400"
-                          >
-                            {el}
-                          </Typography>
-                        </th>
-                      )
-                    )}
+                    {["NO", "SN TUJUAN", "TUJUAN", "TOTAL"].map((el) => (
+                      <th
+                        key={el}
+                        className="border-b border-blue-gray-50 py-3 px-5 text-center"
+                        style={{ width: '25%' }}
+                      >
+                        <span className="text-[11px] font-bold uppercase text-blue-gray-400">
+                          {el}
+                        </span>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {dataTrxBank?.data?.map((trxBank, index) => (
-                    <tr key={index}>
-                      <td className='border-b border-blue-gray-50'>
-                        <div className="flex items-center gap-4 ml-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-bold"
+                  {checkSNDuplicate?.data ? (
+                    <table>
+                      <tbody>
+                        {checkSNDuplicate.data.map((sn, index) => (
+                          <tr
+                            key={index}
+                            className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700"
                           >
-                            {index + 1}
-                          </Typography>
-                        </div>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        <div className="flex items-center gap-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-bold"
-                          >
-                            {trxBank.name}
-                          </Typography>
-                        </div>
-                      </td>
-                      <td className='border-b border-blue-gray-50'>
-                        Rp. {formatNumber(trxBank.total_nominal)}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-                        TOTAL
-                      </Typography>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-                        Rp. {formatNumber(totalNominalBank)}
-                      </Typography>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                    </td>
-                    <td className='border-b border-blue-gray-50'>
-                      <Typography className="text-xs font-bold text-blue-gray-600">
-
-                      </Typography>
-                    </td>
-                  </tr>
+                            <td className="px-6 py-4">{index + 1}</td>
+                            <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                              {sn.sn}
+                            </td>
+                            <td className="px-6 py-4">{sn.tujuan}</td>
+                            <td className="px-6 py-4">{sn.total}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <Marquee>
+                      <MarqueeContent>
+                        <Typography variant="h6" color="black">
+                          TIDAK ADA DATA
+                        </Typography>
+                      </MarqueeContent>
+                    </Marquee>
+                  )}
                 </tbody>
               </table>
-            </CardBody>
+            </div>
           </Card>
-          {/* </div> */}
         </CardBody>
       </Card>
     </div >

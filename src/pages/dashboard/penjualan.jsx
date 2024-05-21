@@ -16,7 +16,7 @@ import {
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { authorsTableData, projectsTableData } from "@/data";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUsers } from "@/store/actionCreators";
+import { fetchPenjualan, fetchUsers, formatNumber } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom"
 import Dropdown from "@/components/Dropdown";
@@ -41,23 +41,23 @@ export function Penjualan() {
   let [endDate, setEndDate] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const penjualan = useSelector((state) => state.penjualan.penjualan);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (startDate && endDate) {
-      setSubmitted(true);
-      setSubmitLoading(true);
-      dispatch(fetchTrxs(startDate, endDate))
-        .then(() => {
-          setSubmitLoading(false);
-        });
+      // setSubmitted(true);
+      // setSubmitLoading(true);
+      dispatch(fetchPenjualan(startDate, endDate))
+      // .then(() => {
+      //   setSubmitLoading(false);
+      // });
     } else {
       console.log('kocak');
     }
   };
 
-  const users = useSelector((state) => state.users.users);
+  console.log(penjualan);
 
   useEffect(() => {
     dispatch(fetchUsers());
@@ -73,11 +73,7 @@ export function Penjualan() {
           </Typography>
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-
-          <div class="grid grid-cols-2 gap-4">
-
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+          {/* <div style={{ display: 'flex', justifyContent: 'center' }}> */} <div className="mb-6 ml-2 mr-2 grid gap-y-10 gap-x-2 md:grid-cols-2 xl:grid-cols-4 flex justify-center">
             <div style={{ marginTop: '5px', marginLeft: '3px', }}>
               <label htmlFor="startDate">Start Date:</label>
               <input
@@ -112,121 +108,39 @@ export function Penjualan() {
               SUBMIT
             </button>
           </div>
-          <table className="w-full min-w-[640px] table-auto">
-            <thead>
-              <tr>
-                {["TRX", "PEMBELIAN", "PENJUALAN", "LABA" ].map((el) => (
-                  <th
-                    key={el}
-                    className="border-b border-blue-gray-50 py-3 px-5 text-center"
-                  >
-                    <Typography
-                      variant="small"
-                      className="text-[11px] font-bold uppercase text-blue-gray-400"
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                  {["TRX", "PEMBELIAN", "PENJUALAN", "LABA", "PPH 22", "LABA NET"].map((el) => (
+                    <th
+                      key={el}
+                      className="border-b border-blue-gray-50 py-3 px-5 text-center"
+                      style={{ width: '16.6%' }}
                     >
-                      {el}
-                    </Typography>
-                  </th>
+                      <span className="text-[11px] font-bold uppercase text-blue-gray-400">
+                        {el}
+                      </span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {penjualan?.data?.map((p, index) => (
+                  <tr key={index} className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      {formatNumber(p.trx)}
+                    </td>
+                    <td className="px-6 py-4">Rp. {formatNumber(p.pembelian)}</td>
+                    <td className="px-6 py-4">Rp. {formatNumber(p.penjualan)}</td>
+                    <td className="px-6 py-4">Rp. {formatNumber(p.laba)}</td>
+                    <td className="px-6 py-4">Rp. {formatNumber(p.pph)}</td>
+                    <td className="px-6 py-4">Rp. {formatNumber(p.laba_net)}</td>
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className='border-b border-blue-gray-50' style={{ width: '25%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SFSDFSDFSD
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50' style={{ width: '25%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50' style={{ width: '25%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50' style={{ width: '25%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              <tr>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SFSDFSDFSD
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              <tr>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SFSDFSDFSD
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              <tr>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SFSDFSDFSD
-                  </Typography>
-                  {/* <Typography className="text-xs font-normal text-blue-gray-500">
-                          {job[1]}
-                        </Typography> */}
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              {/* );
-              }
-              )} */}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         </CardBody>
       </Card>
     </div>

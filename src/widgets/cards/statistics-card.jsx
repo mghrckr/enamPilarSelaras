@@ -9,30 +9,19 @@ import PropTypes from "prop-types";
 
 export function StatisticsCard({ color, icon, title, value, footer }) {
   return (
-    <Card className="border border-blue-gray-100 shadow-sm">
-      <CardHeader
-        variant="gradient"
-        color={color}
-        floated={false}
-        shadow={false}
-        className="absolute grid h-12 w-12 place-items-center"
-      >
-        {icon}
-      </CardHeader>
-      <CardBody className="p-4 text-right">
-        <Typography variant="small" className="font-normal text-blue-gray-600">
+    <Card className="shadow-lg rounded-lg flex flex-col p-4 sm:p-6 lg:p-8 bg-gradient-to-r from-blue-900 to-yellow-400 text-white">
+    <div className="flex items-center justify-between">
+      <div className="flex flex-col">
+        <Typography variant="h6" color="white">
           {title}
         </Typography>
-        <Typography variant="h4" color="blue-gray">
+        <Typography variant="h4" className="mt-2">
           {value}
         </Typography>
-      </CardBody>
-      {footer && (
-        <CardFooter className="border-t border-blue-gray-50 p-4">
-          {footer}
-        </CardFooter>
-      )}
-    </Card>
+      </div>
+      <div className="ml-4">{icon}</div>
+    </div>
+  </Card>
   );
 }
 
