@@ -1,5 +1,5 @@
 # Gunakan image Node.js untuk tahap build
-FROM node:14 as build
+FROM node:20 as build
 
 # Set direktori kerja
 WORKDIR /app
