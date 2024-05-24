@@ -1,6 +1,7 @@
 {
   "name": "material-tailwind-dashboard-react",
   "private": true,
+  "proxy": "http://localhost:4173",
   "version": "2.1.0",
   "type": "module",
   "scripts": {
