@@ -9,7 +9,7 @@ RUN npm install -g vite
 
 COPY . .
 
-RUN npm run build
+RUN vite build
 
 FROM node:20-alpine AS PRODUCTION_IMAGE
 
