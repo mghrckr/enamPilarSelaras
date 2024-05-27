@@ -6,6 +6,7 @@ COPY vite.config.js .
 
 RUN npm install -g npm@10.8.0
 RUN npm install -g vite
+RUN vite build
 
 COPY . .
 
