@@ -2,15 +2,14 @@ FROM node:20 as BUILD_IMAGE
 WORKDIR /app
 
 COPY package*.json ./
-COPY vite.config.js ./
+COPY vite.config.js ./app
 
 RUN npm install -g npm@10.8.0
 RUN npm install -g vite
-RUN npm run build
 
 COPY . .
 
-
+RUN npm run build
 
 FROM node:20-alpine AS PRODUCTION_IMAGE
 
