@@ -2,7 +2,7 @@
 FROM node:20 as build
 
 # Set direktori kerja
-WORKDIR /app
+WORKDIR /myapp
 
 # Salin file package.json dan package-lock.json
 COPY package*.json ./
@@ -22,7 +22,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Salin build output dari tahap build ke direktori Nginx
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /myapp/dist /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 81
