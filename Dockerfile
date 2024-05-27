@@ -1,20 +1,24 @@
-# Use an official Node.js runtime as a parent image
-FROM node:20-alpine
-
-# Set the working directory in the container
+FROM node:20 as BUILD_IMAGE
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install app dependencies
-RUN npm install
+RUN npm install -g npm@10.8.0
 
-# Copy the rest of your application code to the working directory
+RUN npm install -g vite
+
 COPY . .
 
-# Expose a port to communicate with the React app
-EXPOSE 5173
+RUN npm run build
 
-# Start your React app
-CMD ["npm", "run", "dev"]
+FROM node:20-alpine AS PRODUCTION_IMAGE
+
+COPY --from=BUILD_IMAGE /app/dist/ /app/dist/
+WORKDIR /app
+
+EXPOSE 4137
+
+COPY package.json .
+COPY vite.config.js .
+
+CMD ["npm", "run", "preview"]
