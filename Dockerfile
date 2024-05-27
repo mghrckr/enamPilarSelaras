@@ -1,15 +1,9 @@
-# Gunakan image Node.js untuk tahap build
-FROM node:20 as build
+FROM node:20 as BUILD_IMAGE
+WORKDIR /app
 
-# Set direktori kerja
-WORKDIR /myapp
-
-# Salin file package.json dan package-lock.json
-COPY package*.json ./
+COPY package.json .
 
 # Install dependencies
-RUN npm cache clean --force
-RUN npm install -g npm@latest
 RUN npm install
 
 # Salin semua file proyek
@@ -19,13 +13,15 @@ COPY . .
 RUN npm run build
 
 # Gunakan image Nginx untuk tahap deploy
-FROM nginx:alpine
+FROM node-20-alpine AS PRODUCTION_IMAGE
 
-# Salin build output dari tahap build ke direktori Nginx
-COPY --from=build /myapp/dist /usr/share/nginx/html
+COPY --from=BUILD_IMAGE /app/dist/ /app/dist/
+WORKDIR /app
 
-# Expose port 80
-EXPOSE 81
+EXPOSE 4137
+
+COPY package.json .
+COPY vite.config.js .
 
 # Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "run", "preview"]
