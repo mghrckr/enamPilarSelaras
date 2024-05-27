@@ -12,8 +12,7 @@ COPY . .
 # Build aplikasi
 RUN npm run build
 
-# Gunakan image Nginx untuk tahap deploy
-FROM node-20-alpine AS PRODUCTION_IMAGE
+FROM node:20-alpine AS PRODUCTION_IMAGE
 
 COPY --from=BUILD_IMAGE /app/dist/ /app/dist/
 WORKDIR /app
