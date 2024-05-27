@@ -3,13 +3,10 @@ WORKDIR /app
 
 COPY package.json .
 
-# Install dependencies
 RUN npm install
 
-# Salin semua file proyek
 COPY . .
 
-# Build aplikasi
 RUN npm run build
 
 FROM node:20-alpine AS PRODUCTION_IMAGE
@@ -22,5 +19,4 @@ EXPOSE 4137
 COPY package.json .
 COPY vite.config.js .
 
-# Start Nginx
 CMD ["npm", "run", "preview"]
