@@ -2,7 +2,7 @@ FROM node:20 as BUILD_IMAGE
 WORKDIR /app
 
 COPY package*.json ./
-COPY vite.config.js .
+COPY vite.config.js ./
 
 RUN npm install -g npm@10.8.0
 RUN npm install -g vite
