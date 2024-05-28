@@ -22,4 +22,5 @@ COPY vite.config.js .
 
 RUN npm install vite@4.2.0
 
+#
 CMD ["npm", "run", "preview"]
