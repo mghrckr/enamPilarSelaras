@@ -5,7 +5,6 @@ COPY package*.json /app/
 COPY vite.config.js /app/
 
 RUN npm install -g npm@latest
-RUN npm install 
 
 RUN npm install -g vite
 
