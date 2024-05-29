@@ -9,45 +9,28 @@ import {
   Progress,
   Button
 } from "@material-tailwind/react";
-import { StatisticsCard } from "@/widgets/cards";
-import {
-  statisticsCardsData,
-} from "@/data";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { authorsTableData, projectsTableData } from "@/data";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPenjualanHariIni, fetchUsers, formatNumber } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom"
-import Dropdown from "@/components/Dropdown";
-import DropdownOutbox from "@/components/DropdownOutbox";
-import ChatBox from "@/components/ChatBox";
-import statisticsCardsDataMember from "@/data/statistics-cards-dataMember";
 import DropdownAgenID from "@/components/DropdownAgenID";
-import DropdownKelompok from "@/components/DropdownKelompok";
-import DropdownStatus from "@/components/DropdownStatus";
-import DropdownAction from "@/components/DropdownAction";
-import {
-  BanknotesIcon,
-  UserPlusIcon,
-  UsersIcon,
-  ChartBarIcon,
-} from "@heroicons/react/24/solid";
+
 
 export function PenjualanHariIni() {
   const dispatch = useDispatch();
-  let navigate = useNavigate()
-  let [startDate, setStartDate] = useState('');
-  let [endDate, setEndDate] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
+  const [selectedDatabase, setSelectedDatabase] = useState('re');
   const penjualanHariIni = useSelector((state) => state.penjualanHariIni.penjualanHariIni);
 
+  const handleDropdownChange = (value) => {
+    setSelectedDatabase(value);
+  };
 
 
   useEffect(() => {
-    dispatch(fetchPenjualanHariIni());
-  }, [dispatch]);
+    if (selectedDatabase) {
+      dispatch(fetchPenjualanHariIni(selectedDatabase));
+    }
+  }, [dispatch, selectedDatabase]);
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -63,7 +46,19 @@ export function PenjualanHariIni() {
 
           </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <DropdownAgenID />
+            <div className="flex flex-col items-start w-full md:w-auto">
+              <select
+                id="database"
+                onChange={(e) => handleDropdownChange(e.target.value)}
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+              >
+                <option value="">Database</option>
+                <option value="da">Digipos Amazone</option>
+                <option value="de">Digipos EPS</option>
+                <option value="ra">Replica Amazone</option>
+                <option value="re">Replica EPS</option>
+              </select>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">

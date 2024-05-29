@@ -1,73 +1,19 @@
-// import {
-//   Card,
-//   CardHeader,
-//   CardBody,
-//   Typography,
-//   Avatar,
-//   Chip,
-//   Tooltip,
-//   Progress,
-//   Button
-// } from "@material-tailwind/react";
-// import { StatisticsCard } from "@/widgets/cards";
-// import {
-//   statisticsCardsData,
-// } from "@/data";
-// import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { authorsTableData, projectsTableData } from "@/data";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCheckSNDuplicate, fetchCheckSNNullable, fetchDataTrxBank, fetchDataTrxSPL, fetchUsers, formatNumber } from "@/store/actionCreators";
+import { fetchCheckSNDuplicate, fetchCheckSNNullable } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from "react-router-dom"
-// import React from "react";
 import {
   Typography,
   Card,
   CardHeader,
   CardBody,
-  IconButton,
-  Menu,
-  MenuHandler,
-  MenuList,
-  MenuItem,
-  Avatar,
-  Tooltip,
-  Progress,
 } from "@material-tailwind/react";
-import {
-  EllipsisVerticalIcon,
-  ArrowUpIcon,
-} from "@heroicons/react/24/outline";
-// import { StatisticsCard } from "@/widgets/cards";
-// import { StatisticsChart } from "@/widgets/charts";
-import {
-  // statisticsCardsData,
-  // statisticsChartsData,
-  // projectsTableData,
-  ordersOverviewData,
-} from "@/data";
-import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
-import DropdownAction from "@/components/DropdownAction";
-import statisticsCardsDataKomisi from "@/data/statistics-cards-dataKomisi copy";
-import { StatisticsCard } from "@/widgets/cards";
-import DropdownAgenID from "@/components/DropdownAgenID";
 import { styled } from '@mui/system';
 
 
 export function CheckSN() {
   const dispatch = useDispatch();
-  let navigate = useNavigate()
-  let [startDate, setStartDate] = useState('');
-  let [endDate, setEndDate] = useState('');
-  let [startDateBank, setStartDateBank] = useState('');
-  let [endDateBank, setEndDateBank] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [submittedBank, setSubmittedBank] = useState(false);
-  const [submitLoadingBank, setSubmitLoadingBank] = useState(false);
-  const [totalNominalSPL, setTotalNominalSPL] = useState(0);
-  const [totalNominalBank, setTotalNominalBank] = useState(0);
 
+  const [selectedDatabase, setSelectedDatabase] = useState('re');
   const checkSNNullable = useSelector((state) => state.checkSNNullable.checkSNNullable);
   const checkSNDuplicate = useSelector((state) => state.checkSNDuplicate.checkSNDuplicate);
 
@@ -77,7 +23,7 @@ export function CheckSN() {
     overflow: 'hidden',
     width: '100%', // or set a fixed width if you want
   });
-  
+
   const MarqueeContent = styled('div')({
     display: 'inline-block',
     animation: 'marquee 10s linear infinite',
@@ -91,6 +37,9 @@ export function CheckSN() {
     }
   });
 
+  const handleDropdownChange = (value) => {
+    setSelectedDatabase(value);
+  };
 
   const refreshh = (e) => {
     e.preventDefault();
@@ -98,12 +47,12 @@ export function CheckSN() {
   }
 
   useEffect(() => {
-    dispatch(fetchCheckSNNullable());
-    dispatch(fetchCheckSNDuplicate());
-  }, [dispatch]);
+    if (selectedDatabase) {
+      dispatch(fetchCheckSNNullable(selectedDatabase));
+      dispatch(fetchCheckSNDuplicate(selectedDatabase));
+    }
+  }, [dispatch,selectedDatabase]);
 
-  console.log(checkSNNullable, 'yoyoyoyoyoyo');
-  console.log(checkSNDuplicate, 'ZZZZZZZZZZ');
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -116,8 +65,18 @@ export function CheckSN() {
         </CardHeader>
         <CardBody className="px-0 pt-0 pb-2 flex flex-col gap-6">
           {/* <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3"> */}
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <DropdownAgenID />
+          <div style={{ display: 'flex', justifyContent: 'center', maxWidth: '200px', marginLeft: '20px' }}>
+            <select
+              id="database"
+              onChange={(e) => handleDropdownChange(e.target.value)}
+              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+            >
+              <option value="">Database</option>
+              <option value="da">Digipos Amazone</option>
+              <option value="de">Digipos EPS</option>
+              <option value="ra">Replica Amazone</option>
+              <option value="re">Replica EPS</option>
+            </select>
           </div>
           <Card className="border border-blue-gray-100 shadow-sm">
             <div className="overflow-x-auto">

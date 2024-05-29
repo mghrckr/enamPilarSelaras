@@ -10,7 +10,7 @@ import DropdownAgenID from "@/components/DropdownAgenID";
 export function DataSupplier() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const users = useSelector((state) => state.users.users);
+  const [selectedDatabase, setSelectedDatabase] = useState('re');
   const saldoSupplier = useSelector((state) => state.saldoSupplier.saldoSupplier);
   const totalTransaksi = saldoSupplier?.data?.reduce((total, saldo) => total + saldo.total_transaksi, 0);
   const totalPemakaianSaldo = saldoSupplier?.data?.reduce((total, saldo) => total + saldo.pemakaian_saldo, 0);
@@ -37,14 +37,20 @@ export function DataSupplier() {
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
+  const handleDropdownChange = (value) => {
+    setSelectedDatabase(value);
+  };
+
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1);
   };
 
   useEffect(() => {
-    dispatch(fetchSaldoSupplier());
-  }, [dispatch]);
+    if (selectedDatabase) {
+      dispatch(fetchSaldoSupplier(selectedDatabase));
+    }
+  }, [dispatch, selectedDatabase]);
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -56,7 +62,19 @@ export function DataSupplier() {
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
           <div className="flex items-center mb-4 ml-8">
-            <DropdownAgenID />
+            <div className="flex flex-col items-start w-full md:w-auto">
+              <select
+                id="database"
+                onChange={(e) => handleDropdownChange(e.target.value)}
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+              >
+                <option value="">Database</option>
+                <option value="da">Digipos Amazone</option>
+                <option value="de">Digipos EPS</option>
+                <option value="ra">Replica Amazone</option>
+                <option value="re">Replica EPS</option>
+              </select>
+            </div>
             <div className="relative w-full ml-2 mr-8">
               <i className="absolute fa fa-search text-gray-400 top-5 left-4" />
               <input

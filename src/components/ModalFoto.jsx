@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 
-const ModalFoto = ({ url, url2 }) => {
+const ModalFoto = ({ id }) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [filePreview, setFilePreview] = useState(null);
     const [formData, setFormData] = useState({
         file: null,
     });
-
+    const BASE_URL = `http://36.92.58.82:1523/api`
     const toggleModal = () => {
         setModalOpen(!modalOpen);
     };
 
-
-
+    let url = `${BASE_URL}/deposit/de/image/${id}`
+    console.log(url);
     return (
         <div>
             <button
@@ -55,7 +55,7 @@ const ModalFoto = ({ url, url2 }) => {
                         </div>
                         <div className="grid gap-4 mb-4">
                             <div style={{ textAlign: 'center' }}>
-                                <img src={url+url2} alt="Preview" className="max-w-xs max-h-40 mb-4 rounded-lg shadow-lg" />
+                                <img src={url} alt="Preview" className="ml-4 ax-w-xs max-h-80 mb-4 rounded-lg shadow-lg" />
                             </div>
                         </div>
                     </div>

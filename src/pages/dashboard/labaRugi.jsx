@@ -10,17 +10,19 @@ import {
   Button
 } from "@material-tailwind/react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchLabaRugi, fetchUsers, formatNumber } from "@/store/actionCreators";
+import { fetchLabaRugi, fetchUsers, formatNumber, getFirstDayOfMonth, getToday } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom"
 
-import DropdownAgenID from "@/components/DropdownAgenID";
 
 
 
 export function LabaRugi() {
   const dispatch = useDispatch();
   let navigate = useNavigate()
+  const [selectedDatabase, setSelectedDatabase] = useState('re');
+  const [startDateDef, setStartDateDef] = useState(getFirstDayOfMonth());
+  const [endDateDef, setEndDateDef] = useState(getToday());
   let [startDate, setStartDate] = useState('');
   let [endDate, setEndDate] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -38,15 +40,17 @@ export function LabaRugi() {
   const currentData = filteredData?.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredData?.length / itemsPerPage);
 
-
+  const handleDropdownChange = (value) => {
+    setSelectedDatabase(value);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (startDate && endDate) {
+    if (selectedDatabase && startDate && endDate) {
       setSubmitted(true);
       setSubmitLoading(true);
-      dispatch(fetchLabaRugi(startDate, endDate))
+      dispatch(fetchLabaRugi(selectedDatabase, startDate, endDate))
         .then(() => {
           setSubmitLoading(false);
         });
@@ -55,15 +59,17 @@ export function LabaRugi() {
     }
   };
 
-
-  console.log(labaRugi, 'ya tes doang');
   useEffect(() => {
-    dispatch(fetchUsers());
-  }, [dispatch]);
+    if (selectedDatabase && startDateDef && endDateDef) {
+      dispatch(fetchLabaRugi(selectedDatabase, startDateDef, endDateDef));
+    } else {
+      console.log('Please select a database');
+    }
+  }, [dispatch, selectedDatabase, startDate, endDate]);
+
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
-      {/* {JSON.stringify(users.data)} */}
       <Card>
         <CardHeader variant="gradient" color="gray" className="mb-8 p-6">
           <Typography variant="h6" color="white">
@@ -71,15 +77,10 @@ export function LabaRugi() {
           </Typography>
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-
-          <div class="grid grid-cols-2 gap-4">
-
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{ marginTop: '5px', marginLeft: '3px', }}>
-              <label htmlFor="startDate">Start Date:</label>
+        <div className="flex flex-col md:flex-row flex-wrap justify-center items-center space-y-4 md:space-y-0 md:space-x-4 mb-4">
+            <div className="flex flex-col items-start">
+              <label htmlFor="startDate" className="mr-2">Start Date:</label>
               <input
-                style={{ marginLeft: '3px' }}
                 type="date"
                 id="startDate"
                 value={startDate}
@@ -87,10 +88,9 @@ export function LabaRugi() {
                 className="shadow border rounded-lg px-2 py-1"
               />
             </div>
-            <div style={{ marginTop: '5px', marginLeft: '3px' }}>
-              <label htmlFor="endDate">End Date:</label>
+            <div className="flex flex-col items-start">
+              <label htmlFor="endDate" className="mr-2">End Date:</label>
               <input
-                style={{ marginLeft: '3px' }}
                 type="date"
                 id="endDate"
                 value={endDate}
@@ -98,29 +98,47 @@ export function LabaRugi() {
                 className="shadow border rounded-lg px-2 py-1"
               />
             </div>
-            <div className="relative ml-2">
-              <i className="absolute fa fa-search text-gray-400 top-3 left-4" />
-              <input
-                type="text"
-                className="bg-white h-10 px-12 rounded-lg focus:outline-none hover:cursor-pointer border border-gray-300"
-                name="search"
-                placeholder="Search"
-                style={{ backgroundColor: '#F0F0F0' }}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+            <div className="relative flex flex-col items-start">
+              <label htmlFor="search" className="mr-2">Search:</label>
+              <div className="relative">
+                <i className="absolute fa fa-search text-gray-400 top-3 left-4" />
+                <input
+                  type="text"
+                  className="bg-white h-10 px-12 rounded-lg focus:outline-none hover:cursor-pointer border border-gray-300"
+                  name="search"
+                  placeholder="Search"
+                  style={{ backgroundColor: '#F0F0F0' }}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
             </div>
-            <DropdownAgenID />
-            <button
-              onClick={handleSubmit}
-              className="shadow-lg shadow-black-800/80 rounded-lg gradient text-white px-4 py-2 text-sm rounded font-medium focus:ring ring-black ring-opacity-10 gradient element-to-rotate"
-              aria-label="Submit"
-              title="Submit"
-              style={{ backgroundColor: 'green', marginBottom: '8px', marginLeft: '8px' }}
-              disabled={submitLoading}
-            >
-              SUBMIT
-            </button>
+            <div className="flex flex-col items-start">
+              <label htmlFor="database" className="mr-2">Database:</label>
+              <select
+                id="database"
+                onChange={(e) => handleDropdownChange(e.target.value)}
+                className="bg-white h-10 px-4 rounded-lg focus:outline-none border border-gray-300"
+              >
+                <option value="">Database</option>
+                <option value="da">Digipos Amazone</option>
+                <option value="de">Digipos EPS</option>
+                <option value="ra">Replica Amazone</option>
+                <option value="re">Replica EPS</option>
+              </select>
+            </div>
+            <div className="flex flex-col items-start">
+              <Button
+                onClick={handleSubmit}
+                className="shadow-lg shadow-black-800/80 rounded-lg gradient text-white px-4 py-2 text-sm rounded font-medium focus:ring ring-black ring-opacity-10 gradient element-to-rotate"
+                aria-label="Submit"
+                title="Submit"
+                style={{ backgroundColor: 'green' }}
+                disabled={submitLoading}
+              >
+                SUBMIT
+              </Button>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[64  0px] table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">

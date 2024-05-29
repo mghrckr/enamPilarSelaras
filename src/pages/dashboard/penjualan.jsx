@@ -9,30 +9,11 @@ import {
   Progress,
   Button
 } from "@material-tailwind/react";
-import { StatisticsCard } from "@/widgets/cards";
-import {
-  statisticsCardsData,
-} from "@/data";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { authorsTableData, projectsTableData } from "@/data";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchPenjualan, fetchUsers, formatNumber } from "@/store/actionCreators";
+import { fetchPenjualan, fetchUsers, formatNumber, getFirstDayOfMonth, getToday } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom"
-import Dropdown from "@/components/Dropdown";
-import DropdownOutbox from "@/components/DropdownOutbox";
-import ChatBox from "@/components/ChatBox";
-import statisticsCardsDataMember from "@/data/statistics-cards-dataMember";
-import DropdownAgenID from "@/components/DropdownAgenID";
-import DropdownKelompok from "@/components/DropdownKelompok";
-import DropdownStatus from "@/components/DropdownStatus";
-import DropdownAction from "@/components/DropdownAction";
-import {
-  BanknotesIcon,
-  UserPlusIcon,
-  UsersIcon,
-  ChartBarIcon,
-} from "@heroicons/react/24/solid";
+
 
 export function Penjualan() {
   const dispatch = useDispatch();
@@ -42,13 +23,20 @@ export function Penjualan() {
   const [submitted, setSubmitted] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const penjualan = useSelector((state) => state.penjualan.penjualan);
+  const [startDateDef] = useState(getFirstDayOfMonth());
+  const [endDateDef] = useState(getToday());
+  const [selectedDatabase, setSelectedDatabase] = useState('re');
+
+  const handleDropdownChange = (value) => {
+    setSelectedDatabase(value);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (startDate && endDate) {
+    if (selectedDatabase && startDate && endDate) {
       // setSubmitted(true);
       // setSubmitLoading(true);
-      dispatch(fetchPenjualan(startDate, endDate))
+      dispatch(fetchPenjualan(selectedDatabase, startDate, endDate))
       // .then(() => {
       //   setSubmitLoading(false);
       // });
@@ -57,11 +45,10 @@ export function Penjualan() {
     }
   };
 
-  console.log(penjualan);
 
   useEffect(() => {
-    dispatch(fetchUsers());
-  }, [dispatch]);
+    dispatch(fetchPenjualan(selectedDatabase, startDateDef, endDateDef));
+  }, [dispatch, selectedDatabase, startDateDef, endDateDef]);
 
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
@@ -96,7 +83,16 @@ export function Penjualan() {
                 className="shadow border rounded-lg px-2 py-1"
               />
             </div>
-            <DropdownAgenID />
+            <select
+              onChange={(e) => handleDropdownChange(e.target.value)}
+              className="bg-white h-10 px-4 rounded-lg focus:outline-none border border-gray-300 mr-2 ml-4 mb-2 md:mb-0"
+            >
+              <option value="">Database</option>
+              <option value="da">Digipos Amazone</option>
+              <option value="de">Digipos EPS</option>
+              <option value="ra">Replica Amazone</option>
+              <option value="re">Replica EPS</option>
+            </select>
             <button
               onClick={handleSubmit}
               className="shadow-lg shadow-black-800/80 rounded-lg gradient text-white px-4 py-2 text-sm rounded font-medium focus:ring ring-black ring-opacity-10 gradient element-to-rotate"

@@ -1,25 +1,8 @@
-// import {
-//   Card,
-//   CardHeader,
-//   CardBody,
-//   Typography,
-//   Avatar,
-//   Chip,
-//   Tooltip,
-//   Progress,
-//   Button
-// } from "@material-tailwind/react";
-// import { StatisticsCard } from "@/widgets/cards";
-// import {
-//   statisticsCardsData,
-// } from "@/data";
-// import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import { authorsTableData, projectsTableData } from "@/data";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchDataTrxBank, fetchDataTrxSPL, fetchLabaReseller, fetchLabaResellerBot, fetchResellers, fetchUsers } from "@/store/actionCreators";
+import { fetchLabaReseller, fetchLabaResellerBot, fetchResellers } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom"
-// import React from "react";
+
 import {
   Typography,
   Card,
@@ -34,24 +17,8 @@ import {
   Tooltip,
   Progress,
 } from "@material-tailwind/react";
-import {
-  EllipsisVerticalIcon,
-  ArrowUpIcon,
-} from "@heroicons/react/24/outline";
-// import { StatisticsCard } from "@/widgets/cards";
-// import { StatisticsChart } from "@/widgets/charts";
-import {
-  // statisticsCardsData,
-  // statisticsChartsData,
-  // projectsTableData,
-  ordersOverviewData,
-} from "@/data";
-import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
-import DropdownAction from "@/components/DropdownAction";
-import statisticsCardsDataKomisi from "@/data/statistics-cards-dataKomisi copy";
-import { StatisticsCard } from "@/widgets/cards";
+
 import DropdownAgenID from "@/components/DropdownAgenID";
-import DropdownKodeReseller from "@/components/DropdownKodeReseller";
 
 export function LabaReseller() {
   const dispatch = useDispatch();
@@ -60,7 +27,7 @@ export function LabaReseller() {
   let [endDate, setEndDate] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
-
+  const [selectedDatabase, setSelectedDatabase] = useState('re');
 
 
   const labaReseller = useSelector((state) => state.labaReseller.labaReseller);
@@ -117,8 +84,8 @@ export function LabaReseller() {
     if (startDate && endDate) {
       setSubmitted(true);
       setSubmitLoading(true);
-      dispatch(fetchLabaReseller(startDate, endDate, selectedCode))
-      dispatch(fetchLabaResellerBot(startDate, endDate, selectedCode))
+      dispatch(fetchLabaReseller(selectedDatabase, startDate, endDate, selectedCode))
+      dispatch(fetchLabaResellerBot(selectedDatabase, startDate, endDate, selectedCode))
         .then(() => {
           setSubmitLoading(false);
         });
@@ -136,12 +103,17 @@ export function LabaReseller() {
     window.location.reload()
   }
 
+  const handleDropdownChange = (value) => {
+    setSelectedDatabase(value);
+  };
 
   useEffect(() => {
-    dispatch(fetchLabaReseller(startDate, endDate, selectedCode))
-    dispatch(fetchLabaResellerBot(startDate, endDate, selectedCode))
-    dispatch(fetchResellers());
-  }, [dispatch]);
+    if (selectedDatabase) {
+      dispatch(fetchLabaReseller(selectedDatabase, startDate, endDate, selectedCode))
+      dispatch(fetchLabaResellerBot(selectedDatabase, startDate, endDate, selectedCode))
+      dispatch(fetchResellers(selectedDatabase));
+    }
+  }, [dispatch, selectedDatabase]);
   console.log(labaResellerBot, 'yoyoyoyoyoyo');
 
   return (
@@ -178,10 +150,22 @@ export function LabaReseller() {
                 className="shadow border rounded-lg px-2 py-1"
               />
             </div>
-            <DropdownAgenID />
-            {/*dropdown */}
-
+            <div className="flex flex-col items-start w-full md:w-auto">
+              <label htmlFor="database" className="mr-2">Database:</label>
+              <select
+                id="database"
+                onChange={(e) => handleDropdownChange(e.target.value)}
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+              >
+                <option value="">Database</option>
+                <option value="da">Digipos Amazone</option>
+                <option value="de">Digipos EPS</option>
+                <option value="ra">Replica Amazone</option>
+                <option value="re">Replica EPS</option>
+              </select>
+            </div>
             <div className="relative inline-block text-left ">
+              <label htmlFor="database" className="mr-2">Kode Reseller:</label>
               <button
                 id="dropdownDefaultButton"
                 data-dropdown-toggle="dropdown"
@@ -254,7 +238,6 @@ export function LabaReseller() {
                   </tr>
                 </thead>
                 <tbody>
-                  {/* {labaReseller?.data?.map((laba, index) => ( */}
                   <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                       {labaReseller?.data?.nama}

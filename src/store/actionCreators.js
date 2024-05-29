@@ -3,25 +3,60 @@ const BASE_URL_ACN = `http://${import.meta.env.VITE_API_URL2}`
 import Swal from 'sweetalert2';
 
 
+export const handleDelete = (id) => {
+    Swal.fire({
+      title: 'Apakah Anda yakin?',
+      text: 'Data akan dihapus secara permanen.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ya, hapus!',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`${BASE_URL}/deposit/de/${id}`, {
+          method: 'GET'
+        })
+        .then(response => {
+          if (response.ok) {
+            Swal.fire('Terhapus!', 'Data telah dihapus.', 'success');
+            window.location.reload();
+          } else {
+            Swal.fire('Gagal!', 'Terjadi kesalahan saat menghapus data.', 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire('Gagal!', 'Terjadi kesalahan saat menghapus data.', 'error');
+        });
+      }
+    });
+  };
 
-// export const fetchUsers = () => {
-//   return async dispatch => {
-//     try {
-//       const response = await fetch(`${BASE_URL}/datakaryawan`, {
-//         method: "GET"
-//       });
+const formatDate = (date) => {
+    const d = new Date(date);
+    let month = '' + (d.getMonth() + 1);
+    let day = '' + d.getDate();
+    const year = d.getFullYear();
 
-//       if (!response.ok) {
-//         throw new Error('Failed to fetch data');
-//       }
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
 
-//       const data = await response.json();
-//       dispatch({ type: 'users/get', payload: data });
-//     } catch (error) {
-//       console.log(error.message);
-//     }
-//   };
-// }
+    return [year, month, day].join('-');
+};
+
+export const getFirstDayOfMonth = () => {
+    const date = new Date();
+    date.setDate(1);
+    return formatDate(date);
+};
+
+export const getToday = () => {
+    const date = new Date();
+    return formatDate(date);
+};
+
 
 export const formatNumber = (number) => {
     if (number === undefined) {
@@ -62,10 +97,10 @@ export const getKpi = (dataFilter) => {
     };
 };
 
-export const fetchSaldoSupplier = () => {
+export const fetchSaldoSupplier = (selectedDatabase) => {
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/supplier/re/balance`, {
+            const response = await fetch(`${BASE_URL}/supplier/${selectedDatabase}/balance`, {
                 method: "GET",
             });
 
@@ -81,10 +116,10 @@ export const fetchSaldoSupplier = () => {
     };
 }
 
-export const fetchPenjualan = (startDate, endDate) => {
+export const fetchPenjualan = (selectedDatabase, startDate, endDate) => {
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/sales/ra/periode?startDate=${startDate}&endDate=${endDate}`, {
+            const response = await fetch(`${BASE_URL}/sales/${selectedDatabase}/periode?startDate=${startDate}&endDate=${endDate}`, {
                 method: "GET",
             });
 
@@ -100,10 +135,10 @@ export const fetchPenjualan = (startDate, endDate) => {
     };
 }
 
-export const fetchPenjualanHariIni = () => {
+export const fetchPenjualanHariIni = (selectedDatabase) => {
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/sales/re`, {
+            const response = await fetch(`${BASE_URL}/sales/${selectedDatabase}`, {
                 method: "GET"
             });
 
@@ -119,10 +154,10 @@ export const fetchPenjualanHariIni = () => {
     };
 }
 
-export const fetchCheckSNNullable = () => {
+export const fetchCheckSNNullable = (selectedDatabase) => {
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/sn/null/ra`, {
+            const response = await fetch(`${BASE_URL}/sn/null/${selectedDatabase}`, {
                 method: "GET"
             });
 
@@ -138,10 +173,10 @@ export const fetchCheckSNNullable = () => {
     };
 }
 
-export const fetchCheckSNDuplicate = () => {
+export const fetchCheckSNDuplicate = (selectedDatabase) => {
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/sn/duplicate/ra`, {
+            const response = await fetch(`${BASE_URL}/sn/duplicate/${selectedDatabase}`, {
                 method: "GET"
             });
 
@@ -157,10 +192,10 @@ export const fetchCheckSNDuplicate = () => {
     };
 }
 
-export const fetchLabaReseller = (startDate, endDate, selectedCode) => {
+export const fetchLabaReseller = (selectedDatabase, startDate, endDate, selectedCode) => {
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/reseller/re/sum?startDt=${startDate}&endDt=${endDate}&id=${selectedCode}`, {
+            const response = await fetch(`${BASE_URL}/reseller/${selectedDatabase}/sum?startDt=${startDate}&endDt=${endDate}&id=${selectedCode}`, {
                 method: "GET"
             });
 
@@ -176,10 +211,10 @@ export const fetchLabaReseller = (startDate, endDate, selectedCode) => {
     };
 }
 
-export const fetchLabaResellerBot = (startDate, endDate, selectedCode) => {
+export const fetchLabaResellerBot = (selectedDatabase, startDate, endDate, selectedCode) => {
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/reseller/re/laba?startDt=${startDate}&endDt=${endDate}&id=${selectedCode}`, {
+            const response = await fetch(`${BASE_URL}/reseller/${selectedDatabase}/laba?startDt=${startDate}&endDt=${endDate}&id=${selectedCode}`, {
                 method: "GET"
             });
 
@@ -195,10 +230,10 @@ export const fetchLabaResellerBot = (startDate, endDate, selectedCode) => {
     };
 }
 
-export const fetchLabaRugi = (startDate, endDate) => {
+export const fetchLabaRugi = (selectedDatabase, startDate, endDate) => {
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/reseller/ra/labarugi?startDt=${startDate}&endDt=${endDate}`, {
+            const response = await fetch(`${BASE_URL}/reseller/${selectedDatabase}/labarugi?startDt=${startDate}&endDt=${endDate}`, {
                 method: "GET"
             });
 
@@ -214,10 +249,11 @@ export const fetchLabaRugi = (startDate, endDate) => {
     };
 }
 
-export const fetchResellers = () => {
+export const fetchResellers = (selectedDatabase) => {
+    console.log(selectedDatabase);
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/reseller/re/list`, {
+            const response = await fetch(`${BASE_URL}/reseller/${selectedDatabase}/list`, {
                 method: "GET"
             });
 
@@ -233,10 +269,10 @@ export const fetchResellers = () => {
     };
 }
 
-export const fetchLabaHarian = () => {
+export const fetchLabaHarian = (selectedDatabase) => {
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/reseller/re/laba/hourly`, {
+            const response = await fetch(`${BASE_URL}/reseller/${selectedDatabase}/laba/hourly`, {
                 method: "GET"
             });
 
@@ -252,10 +288,11 @@ export const fetchLabaHarian = () => {
     };
 }
 
-export const fetchSuppliers = () => {
+export const fetchSuppliers = (selectedDatabase) => {
+    console.log(selectedDatabase, 'dalem');
     return async dispatch => {
         try {
-            const response = await fetch(`${BASE_URL}/supplier/de`, {
+            const response = await fetch(`${BASE_URL}/supplier/${selectedDatabase}`, {
                 method: "GET"
             });
 
@@ -318,6 +355,140 @@ export const editSupplier = (formData) => {
         }
     };
 };
+
+export const addDeposit = (formData) => {
+    console.log(formData, 'form');
+    return async (dispatch) => {
+        try {
+            const response = await fetch(`${BASE_URL}/deposit/de`, {
+                method: 'POST',
+                // headers: {
+                //     'Content-Type': 'application/json',
+                // },
+                body: formData,
+            });
+            console.log(response, 'fffffffffff');
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Input Deposit Successfully!',
+                    showConfirmButton: false,
+                    timer: 2000,
+                }).then(() => {
+                    setTimeout(() => {
+                        // window.location.reload();
+                    }, 2000);
+                });
+            } else {
+                console.error('Add request failed');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'deposit/add', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+};
+
+export const fetchDepositsorCheckPendings = (selectedDatabase) => {
+    return async dispatch => {
+        try {
+            // console.log(pickedCategory, 'ini id');
+            const response = await fetch(`${BASE_URL}/deposit/${selectedDatabase}/created`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'deposits/get', payload: data });
+            // console.log(data,'ini data');
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchUploadedorCheckPendings = (selectedDatabase) => {
+    return async dispatch => {
+        try {
+            // console.log(pickedCategory, 'ini id');
+            const response = await fetch(`${BASE_URL}/deposit/${selectedDatabase}/uploaded`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'uploaded/get', payload: data });
+            // console.log(data,'ini data');
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchDataTransaksi = (selectedDatabase, startDate, endDate) => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/deposit/${selectedDatabase}/done?startDt=${startDate}&endDt=${endDate}`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'dataTransaksi/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchCancelDeposit = (selectedDatabase, startDate, selectedTime) => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/deposit/${selectedDatabase}/all?dt=${startDate} ${selectedTime}`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'cancelDeposit/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
+
+export const fetchDataTransaksiAll = (selectedDatabase) => {
+    return async dispatch => {
+        try {
+            const response = await fetch(`${BASE_URL}/deposit/${selectedDatabase}/all`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+            dispatch({ type: 'dataTransaksi/get', payload: data });
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+}
 
 export const fetchProducts = (page, limit, pickedCategory, search) => {
     return async dispatch => {
@@ -650,44 +821,7 @@ export const addUser = (userData) => {
     };
 };
 
-export const addDeposit = (formData) => {
-    console.log(formData, 'form');
-    return async (dispatch) => {
-        try {
-            const response = await fetch(`${BASE_URL_ACN}/spldeposit/input`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
 
-            // if (!response.ok) {
-            //     throw new Error('Failed to add user');
-            // }
-            if (response.ok) {
-                // Logika jika PUT berhasil
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Data added successfully!',
-                    showConfirmButton: false,
-                    timer: 2000,
-                }).then(() => {
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                });
-            } else {
-                console.error('PUT request failed');
-            }
-
-            const data = await response.json();
-            dispatch({ type: 'deposit/add', payload: data });
-        } catch (error) {
-            console.log(error.message);
-        }
-    };
-};
 
 export const addSaldo = (formData) => {
     console.log(formData, 'form');

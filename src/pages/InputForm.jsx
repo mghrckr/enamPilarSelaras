@@ -9,20 +9,24 @@ import {
   MenuItem
 } from "@material-tailwind/react";
 import { useDispatch, useSelector } from "react-redux";
-import { addDeposit, fetchBanks, fetchSuppliersAcns, fetchUserAcns, setPickedBank, setPickedSupplier, setPickedUser } from '@/store/actionCreators';
+import { addDeposit, fetchBanks, fetchSuppliers, fetchSuppliersAcns, fetchUserAcns, setPickedBank, setPickedSupplier, setPickedUser } from '@/store/actionCreators';
 
 export function InputForm() {
   const [formData, setFormData] = useState({
-    user_id: '',
-    supplier_id: '',
-    nominal: '',
-    bankaccount_id: '',
-    banknote: ''
+    name: '',
+    supplier: '',
+    amount: '',
+    origin_account: '',
+    destination_account: ''
   });
+
 
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenSupplier, setIsOpenSupplier] = useState(false);
   const [isOpenBank, setIsOpenBank] = useState(false);
+  const [selectedDatabase, setselectedDatabase] = useState('de');
+  const [selectedSupplier, setselectedSupplier] = useState('');
+  const suppliers = useSelector((state) => state.suppliers.suppliers);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -77,9 +81,6 @@ export function InputForm() {
   const banks = useSelector((state) => state.banks.banks);
   const userAcns = useSelector((state) => state.userAcns.userAcns);
   const suppliersAcns = useSelector((state) => state.suppliersAcns.suppliersAcns);
-  const pickedUser = useSelector((state) => state.pickedUser.pickedUser);
-  const pickedSupplier = useSelector((state) => state.pickedSupplier.pickedSupplier);
-  const pickedBank = useSelector((state) => state.pickedBank.pickedBank);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -89,6 +90,22 @@ export function InputForm() {
     });
   };
 
+  const handleDropdownChangeSuppliers = (value) => {
+    setselectedSupplier(value);
+    setFormData({
+      ...formData,
+      supplier: value,
+    });
+  };
+  const handleDropdownChange = (value) => {
+    setselectedDatabase(value);
+  };
+  const handleDropdownChangeBank = (value) => {
+    setFormData({
+      ...formData,
+      origin_account: value,
+    });
+  };
   const handleSelectChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -104,11 +121,8 @@ export function InputForm() {
     for (const key in formData) {
       formDataToSend.append(key, formData[key]);
     }
-
     try {
-      // Dispatch the action to add user
-      await dispatch(addDeposit(Object.fromEntries(formDataToSend)));
-     
+      await dispatch(addDeposit(formDataToSend));
     } catch (error) {
       console.error('Error adding user:', error);
     }
@@ -119,6 +133,12 @@ export function InputForm() {
     dispatch(fetchSuppliersAcns());
     dispatch(fetchUserAcns());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (selectedDatabase) {
+      dispatch(fetchSuppliers(selectedDatabase));
+    }
+  }, [selectedDatabase, dispatch]);
 
   console.log(banks, 'benggg');
   console.log(suppliersAcns, 'supp');
@@ -131,94 +151,43 @@ export function InputForm() {
       <form className="mt-8 mb-2 w-80 max-w-screen-lg sm:w-96" onSubmit={handleSubmit} encType="multipart/form-data">
         <div className="mb-1 flex flex-col gap-6">
           <div className="relative inline-block text-left mb-2 mt-2 mr-2 ml-2">
-            <button
-              id="dropdownDefaultButton"
-              data-dropdown-toggle="dropdown"
-              className="flex items-center mt-2 text-white bg-gradient-to-r from-brown-400 via-brown-500 to-brown-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-brown-300 dark:focus:ring-brown-800 shadow-lg shadow-brown-500/50 dark:shadow-lg dark:shadow-brown-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 relative"
-              type="button"
-              onClick={toggleDropdown}
-              style={{ backgroundColor: '#594545' }}
+            <select
+              onChange={(e) => handleDropdownChange(e.target.value)}
+              className="bg-white h-10 px-4 rounded-lg focus:outline-none border border-gray-300 mr-2"
             >
-              <span>
-                {pickedUser || 'Select Users'}
-              </span>
-              <svg
-                className={`w-2.5 h-2.5 ml-3 transition-transform transform ${isOpen ? 'rotate-180' : ''}`}
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 10 6"
-              >
-                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
-              </svg>
-            </button>
-
-            <div
-              name="user_id"
-              id="dropdown"
-              value={formData.user_id}
-              className={`z-10 absolute ${isOpen ? 'block' : 'hidden'} bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}
-              style={{ top: 'calc(100% + 5px)', left: 0 }}
-            >
-              <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
-                {userAcns?.data?.map((user, index) => (
-                  <li key={index}>
-                    <button
-                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                      onClick={() => handleUserClick(user.name)}
-                      onChange={() => handleSelectChange(user.id)}
-                    >
-                      {user.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
+              <option value="">Database</option>
+              <option value="da">Digipos Amazone</option>
+              <option value="de">Digipos EPS</option>
+            </select>
+          </div>
+          <div>
+            <Typography variant="h6" color="blue-gray" className="-mb-1">
+              PIC
+            </Typography>
+            <Input
+              type="text"
+              className="!border-t-blue-gray-200 focus:!border-t-gray-900"
+              labelProps={{
+                className: "before:content-none after:content-none",
+              }}
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+            />
           </div>
           <div className="relative inline-block text-left mb-2 mt-2 mr-2 ml-2">
-            <button
-              id="dropdownDefaultButton"
-              data-dropdown-toggle="dropdown"
-              className="flex items-center mt-2 text-white bg-gradient-to-r from-brown-400 via-brown-500 to-brown-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-brown-300 dark:focus:ring-brown-800 shadow-lg shadow-brown-500/50 dark:shadow-lg dark:shadow-brown-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 relative"
-              type="button"
-              onClick={toggleDropdownSupplier}
-              style={{ backgroundColor: '#594545' }}
+            <select
+              // value={formData.supplier}
+              onChange={(e) => handleDropdownChangeSuppliers(e.target.value)}
+              className="bg-white h-10 px-4 rounded-lg focus:outline-none border border-gray-300 mr-2"
             >
-              <span>
-                {pickedSupplier || 'Select Suppliers'}
-              </span>
-              <svg
-                className={`w-2.5 h-2.5 ml-3 transition-transform transform ${isOpenSupplier ? 'rotate-180' : ''}`}
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 10 6"
-              >
-                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
-              </svg>
-            </button>
-
-            <div
-              name="supplier_id"
-              id="dropdown"
-              value={formData.supplier_id}
-              className={`z-10 absolute ${isOpenSupplier ? 'block' : 'hidden'} bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}
-              style={{ top: 'calc(100% + 5px)', left: 0 }}
-            >
-              <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
-                {suppliersAcns?.data?.map((supplier, index) => (
-                  <li key={index}>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                      onClick={() => handleSupplierClick(supplier.name)}
-                    >
-                      {supplier.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+              <option value="">Suppliers</option>
+              {suppliers?.data?.map((supplier, index) => (
+                <option key={index} value={supplier.name}>
+                  {supplier.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <Typography variant="h6" color="blue-gray" className="-mb-1">
@@ -230,82 +199,23 @@ export function InputForm() {
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
-              name="nominal"
-              value={formData.nominal}
+              name="amount"
+              value={formData.amount}
               onChange={handleInputChange}
             />
           </div>
-          {/* <div>
-            <Typography variant="h6" color="blue-gray" className="-mb-1">
-              Rekening Asal
-            </Typography>
-            <fieldset>
-              <legend className="sr-only">Countries</legend>
-              {banks?.data?.map(bank => (
-                <div key={bank.id} className="flex items-center mb-4 mt-4">
-                  <input
-                    id={bank.id}
-                    type="radio"
-                    name="bankaccount_id"
-                    value={formData.bankaccount_id}
-                    className="w-4 h-4 border-gray-300 focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-600 dark:focus:bg-blue-600 dark:bg-gray-700 dark:border-gray-600"
-                    // defaultChecked={formData.bankaccount_id === bank.id}
-                    onChange={handleRadioChange}
-                  />
-                  <label
-                    htmlFor={bank.id}
-                    className="block ms-2  text-sm font-medium text-gray-900 dark:text-gray-300"
-                  >
-                    {bank.name}
-                  </label>
-                </div>
-              ))}
-            </fieldset>
-          </div> */}
           <div className="relative inline-block text-left mb-2 mt-2 mr-2 ml-2">
-            <button
-              id="dropdownDefaultButton"
-              data-dropdown-toggle="dropdown"
-              className="flex items-center mt-2 text-white bg-gradient-to-r from-brown-400 via-brown-500 to-brown-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-brown-300 dark:focus:ring-brown-800 shadow-lg shadow-brown-500/50 dark:shadow-lg dark:shadow-brown-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 relative"
-              type="button"
-              onClick={toggleDropdownBank}
-              style={{ backgroundColor: '#594545' }}
+            <select
+              onChange={(e) => handleDropdownChangeBank(e.target.value)}
+              className="bg-white h-10 px-4 rounded-lg focus:outline-none border border-gray-300 mr-2"
             >
-              <span>
-                {pickedBank || 'Select Banks'}
-              </span>
-              <svg
-                className={`w-2.5 h-2.5 ml-3 transition-transform transform ${isOpenBank ? 'rotate-180' : ''}`}
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 10 6"
-              >
-                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
-              </svg>
-            </button>
-
-            <div
-              name="supplier_id"
-              id="dropdown"
-              value={formData.bankaccount_id}
-              className={`z-10 absolute ${isOpenBank ? 'block' : 'hidden'} bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}
-              style={{ top: 'calc(100% + 5px)', left: 0 }}
-            >
-              <ul className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
-                {banks?.data?.map((bank, index) => (
-                  <li key={index}>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                      onClick={() => handleBankClick(bank.name)}
-                    >
-                      {bank.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+              <option value="">Rekening Asal</option>
+              {['BCA', 'BNI', 'BRI', 'MANDIRI'].map((bank, index) => (
+                <option key={index} value={bank}>
+                  {bank}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <Typography variant="h6" color="blue-gray" className="-mb-1">
@@ -317,8 +227,8 @@ export function InputForm() {
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
-              name="banknote"
-              value={formData.banknote}
+              name="destination_account"
+              value={formData.destination_account}
               onChange={handleInputChange}
             />
           </div>

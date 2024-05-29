@@ -20,9 +20,14 @@ export function Inbox() {
   const [modalOpen, setModalOpen] = useState(false);
   const [totalBalance, setTotalBalance] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDatabase, setselectedDatabase] = useState('de');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  const handleDropdownChange = (value) => {
+    setselectedDatabase(value);
+  };
+  console.log(selectedDatabase);
   const formatNumber = (number) => {
     if (number === undefined) {
       return "";
@@ -71,8 +76,10 @@ export function Inbox() {
   const dataSupplier = useSelector((state) => state.dataSupplier.dataSupplier);
 
   useEffect(() => {
-    dispatch(fetchSuppliers());
-  }, [dispatch]);
+    if (selectedDatabase) {
+      dispatch(fetchSuppliers(selectedDatabase));
+    }
+  }, [selectedDatabase, dispatch]);
 
   useEffect(() => {
     if (dataSupplier && dataSupplier.data) {
@@ -91,7 +98,7 @@ export function Inbox() {
   );
 
   const totalPages = Math.ceil(filteredData?.length / itemsPerPage);
-// console.log(paginatedData,'dfdfdf');
+  // console.log(paginatedData,'dfdfdf');
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <Card>
@@ -101,7 +108,7 @@ export function Inbox() {
           </Typography>
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-          <div className="flex justify-between mb-4">
+        <div className="mb-6 ml-2 mr-2 grid gap-y-10 gap-x-2 md:grid-cols-2 xl:grid-cols-4 flex justify-center">
             <button
               type="button"
               className="ml-2 text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
@@ -118,6 +125,14 @@ export function Inbox() {
             >
               TAMBAH SUPPLIER
             </button>
+            <select
+              onChange={(e) => handleDropdownChange(e.target.value)}
+              className="bg-white h-10 px-4 rounded-lg focus:outline-none border border-gray-300 mr-2"
+            >
+              <option value="">Database</option>
+              <option value="da">Digipos Amazone</option>
+              <option value="de">Digipos EPS</option>
+            </select>
             <input
               type="text"
               className="bg-white h-10 px-4 rounded-lg focus:outline-none border border-gray-300 mr-2"

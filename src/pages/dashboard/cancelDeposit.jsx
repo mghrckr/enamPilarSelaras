@@ -16,7 +16,7 @@ import {
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { authorsTableData, projectsTableData } from "@/data";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUsers } from "@/store/actionCreators";
+import { fetchCancelDeposit, fetchUsers, handleDelete } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom"
 import Dropdown from "@/components/Dropdown";
@@ -33,22 +33,41 @@ import {
   UsersIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/solid";
+import TimePicker from "@/components/TimePicker";
 
 export function CancelDeposit() {
   const dispatch = useDispatch();
   let navigate = useNavigate()
   let [startDate, setStartDate] = useState('');
   let [endDate, setEndDate] = useState('');
+  const [selectedDatabase, setSelectedDatabase] = useState('de');
   const [submitted, setSubmitted] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [selectedTime, setSelectedTime] = useState('');
 
+  // utils.js (buat file baru atau tambahkan ke file utilitas yang ada)
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const formattedDate = formatDate(startDate)
+  const handleDropdownChange = (value) => {
+    setSelectedDatabase(value);
+  };
+  const handleTimeChange = (time) => {
+    setSelectedTime(time);
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (startDate && endDate) {
+    if (selectedDatabase && startDate && selectedTime) {
       setSubmitted(true);
       setSubmitLoading(true);
-      dispatch(fetchTrxs(startDate, endDate))
+      dispatch(fetchCancelDeposit(selectedDatabase, formattedDate, selectedTime))
         .then(() => {
           setSubmitLoading(false);
         });
@@ -57,12 +76,12 @@ export function CancelDeposit() {
     }
   };
 
-  const users = useSelector((state) => state.users.users);
+  const cancelDeposit = useSelector((state) => state.cancelDeposit.cancelDeposit);
 
   useEffect(() => {
     dispatch(fetchUsers());
   }, [dispatch]);
-
+  console.log(selectedTime, formattedDate, 'yah');
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       {/* {JSON.stringify(users.data)} */}
@@ -73,13 +92,9 @@ export function CancelDeposit() {
           </Typography>
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-
-          <div class="grid grid-cols-2 gap-4">
-
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div className="mb-6 ml-2 mr-2 grid gap-y-10 gap-x-2 md:grid-cols-2 xl:grid-cols-4 flex justify-center">
             <div style={{ marginTop: '5px', marginLeft: '3px', }}>
-              <label htmlFor="startDate">Start Date:</label>
+              <label htmlFor="startDate">Search Date:</label>
               <input
                 style={{ marginLeft: '3px' }}
                 type="date"
@@ -89,27 +104,15 @@ export function CancelDeposit() {
                 className="shadow border rounded-lg px-2 py-1"
               />
             </div>
-            <div style={{ marginTop: '5px', marginLeft: '3px' }}>
-              <label htmlFor="endDate">End Date:</label>
-              <input
-                style={{ marginLeft: '3px' }}
-                type="date"
-                id="endDate"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="shadow border rounded-lg px-2 py-1"
-              />
-            </div>
-            <div className="relative ml-2">
-              <i className="absolute fa fa-search text-gray-400 top-3 left-4" />
-              <input
-                type="text"
-                className="bg-white h-10 px-12 rounded-lg focus:outline-none hover:cursor-pointer border border-gray-300"
-                name=""
-                style={{ backgroundColor: '#F0F0F0' }}
-              />
-            </div>
-            <DropdownAgenID />
+            <TimePicker onTimeChange={handleTimeChange} />
+            <select
+              onChange={(e) => handleDropdownChange(e.target.value)}
+              className="bg-white h-10 px-4 rounded-lg focus:outline-none border border-gray-300 mr-2 ml-4 mb-2 md:mb-0"
+            >
+              <option value="">Database</option>
+              <option value="da">Digipos Amazone</option>
+              <option value="de">Digipos EPS</option>
+            </select>
             <button
               onClick={handleSubmit}
               className="shadow-lg shadow-black-800/80 rounded-lg gradient text-white px-4 py-2 text-sm rounded font-medium focus:ring ring-black ring-opacity-10 gradient element-to-rotate"
@@ -121,157 +124,54 @@ export function CancelDeposit() {
               SUBMIT
             </button>
           </div>
-          <table className="w-full min-w-[640px] table-auto">
-            <thead>
-              <tr>
-                {["ID", "TANGGAL ENTRY", "TANGGAL STATUS", "PIC", "SUPPLIER", "REKENING ASAL", "AMOUNT", "STATUS", "OPSI"].map((el) => (
-                  <th
-                    key={el}
-                    className="border-b border-blue-gray-50 py-3 px-5 text-center"
-                  >
-                    <Typography
-                      variant="small"
-                      className="text-[11px] font-bold uppercase text-blue-gray-400"
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                  {["ID", "TANGGAL ENTRY", "TANGGAL STATUS", "PIC", 'SUPPLIER', 'REKENING ASAL', 'AMOUNT', 'STATUS', 'OPSI'].map((el) => (
+                    <th
+                      key={el}
+                      className="border-b border-blue-gray-50 py-3 px-5 text-center"
+                      style={{ width: '9,7%' }}
                     >
-                      {el}
-                    </Typography>
-                  </th>
+                      <span className="text-[11px] font-bold uppercase text-blue-gray-400">
+                        {el}
+                      </span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {cancelDeposit?.data?.map((cancel, index) => (
+                  <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700" key={index}>
+                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      {cancel.id}
+                    </td>
+                    <td className="px-6 py-4">{cancel.created_at}</td>
+                    <td className="px-6 py-4">{cancel.updated_at}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      {cancel.name}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      {cancel.supplier}
+                    </td>
+                    <td className="px-6 py-4">{cancel.origin_account}</td>
+                    <td className="px-6 py-4">{cancel.amount}</td>
+                    <td className="px-6 py-4">{cancel.status}</td>
+                    <td className="px-6 py-4">
+                      <button
+                        className="shadow-lg shadow-black-800/80 rounded-lg gradient text-white px-4 py-2 text-sm rounded font-medium focus:ring ring-black ring-opacity-10 gradient element-to-rotate"
+                        aria-label="Submit"
+                        title="Submit"
+                        style={{ backgroundColor: 'red', marginBottom: '8px', marginLeft: '8px' }}
+                        onClick={() => handleDelete(cancel.id)}>Delete
+                      </button>
+                    </td>
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className='border-b border-blue-gray-50' style={{ width: '5%' }} >
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="font-semibold ml-5"
-                  >
-                    1
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50' style={{ width: '20%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SFSDFSDFSD
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50' style={{ width: '20%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50' style={{ width: '20%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50' style={{ width: '20%' }}>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              <tr>
-                <td className='border-b border-blue-gray-50' style={{ width: '5%' }} >
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="font-semibold ml-5"
-                  >
-                    1
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SFSDFSDFSD
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              <tr>
-                <td className='border-b border-blue-gray-50' style={{ width: '5%' }} >
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="font-semibold ml-5"
-                  >
-                    1
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SFSDFSDFSD
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              <tr>
-                <td className='border-b border-blue-gray-50' style={{ width: '5%' }} >
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="font-semibold ml-5"
-                  >
-                    1
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SFSDFSDFSD
-                  </Typography>
-                  {/* <Typography className="text-xs font-normal text-blue-gray-500">
-                          {job[1]}
-                        </Typography> */}
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-                <td className='border-b border-blue-gray-50'>
-                  <Typography className="text-xs font-semibold text-blue-gray-600">
-                    SDFSFDSDFSDF
-                  </Typography>
-                </td>
-              </tr>
-              {/* );
-              }
-              )} */}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         </CardBody>
       </Card>
     </div>

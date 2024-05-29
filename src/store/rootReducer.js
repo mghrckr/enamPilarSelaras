@@ -150,6 +150,18 @@ const suppliersState = {
   suppliers: [],
 };
 
+const uploadedState = {
+  uploaded: [],
+};
+
+const dataTransaksiState = {
+  dataTransaksi: [],
+};
+
+const cancelDepositState = {
+  cancelDeposit: [],
+};
+
 // const loginState = {
 //   loginDetails: {
 //     DB_USER: '',
@@ -345,6 +357,68 @@ const suppliersReducer = (state = suppliersState, actions) => {
   }
 }
 
+const depositsReducer = (state = depositsState, actions) => {
+  switch (actions.type) {
+    case 'deposits/get':
+      return {
+        ...state,
+        deposits: actions.payload,
+        loading: false,
+      };
+    case 'deposit/add':
+      return {
+        ...state,
+        deposits: [...state.deposits, actions.payload],
+      };
+    default:
+      return state;
+  }
+}
+
+const uploadedReducer = (state = uploadedState, actions) => {
+  switch (actions.type) {
+    case 'uploaded/get':
+      return {
+        ...state,
+        uploaded: actions.payload,
+        loading: false,
+      };
+    // case 'deposit/add':
+    //   return {
+    //     ...state,
+    //     deposits: [...state.deposits, actions.payload],
+    //   };
+    default:
+      return state;
+  }
+}
+
+const dataTransaksiReducer = (state = dataTransaksiState, actions) => {
+  switch (actions.type) {
+    case 'dataTransaksi/get':
+      return {
+        ...state,
+        dataTransaksi: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
+const cancelDepositReducer = (state = cancelDepositState, actions) => {
+  switch (actions.type) {
+    case 'cancelDeposit/get':
+      return {
+        ...state,
+        cancelDeposit: actions.payload,
+        loading: false,
+      };
+    default:
+      return state;
+  }
+}
+
 const productsReducer = (state = productsState, actions) => {
   switch (actions.type) {
     case 'products/get':
@@ -444,23 +518,6 @@ const saldoAwalReducer = (state = saldoAwalState, actions) => {
 }
 
 
-const depositsReducer = (state = depositsState, actions) => {
-  switch (actions.type) {
-    case 'deposits/get':
-      return {
-        ...state,
-        deposits: actions.payload,
-        loading: false,
-      };
-    case 'deposit/add':
-      return {
-        ...state,
-        deposits: [...state.deposits, actions.payload],
-      };
-    default:
-      return state;
-  }
-}
 
 const cekPendingsReducer = (state = cekPendingsState, actions) => {
   switch (actions.type) {
@@ -977,6 +1034,9 @@ const rootReducer = combineReducers({
   saldoSupplier: saldoSupplierReducer,
   labaHarian: labaHarianReducer,
   suppliers: suppliersReducer,
+  uploaded: uploadedReducer,
+  dataTransaksi: dataTransaksiReducer,
+  cancelDeposit: cancelDepositReducer,
   dataTrxBank: dataTrxBankReducer,
   saldoAwal: saldoAwalReducer,
   dataTrxs: dataTrxsReducer,

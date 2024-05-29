@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
+const BASE_URL = `http://36.92.58.82:1523/api`
 
-const ModalFile = ({ id }) => {
+const ModalFile = ({ id, name, supplier, amount, origin_account, destination_account }) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [filePreview, setFilePreview] = useState(null);
     const [formData, setFormData] = useState({
-        file: null,
+        name: name,
+        supplier: supplier,
+        amount: amount,
+        origin_account: origin_account,
+        destination_account: destination_account,
+        image: null,
     });
 
     const toggleModal = () => {
@@ -22,21 +28,25 @@ const ModalFile = ({ id }) => {
             reader.readAsDataURL(file);
             setFormData({
                 ...formData,
-                file: file,
+                image: file,
             });
         }
     };
-    // console.log(id, 'ini diaaaa');
-    const handleSubmit = async (fileKey, e, id) => {
-        console.log(id, 'id dalem');
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         toggleModal();
 
         const formDataToSend = new FormData();
-        formDataToSend.append(fileKey, formData[fileKey]);
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('supplier', formData.supplier);
+        formDataToSend.append('amount', formData.amount);
+        formDataToSend.append('origin_account', formData.origin_account);
+        formDataToSend.append('destination_account', formData.destination_account);
+        formDataToSend.append('image', formData.image);
 
         try {
-            const response = await fetch(`http://${import.meta.env.VITE_API_URL2}/upload/transferbukti/${id}`, {
+            const response = await fetch(`${BASE_URL}/deposit/de/update/${id}`, {
                 method: 'POST',
                 body: formDataToSend,
             });
@@ -45,9 +55,8 @@ const ModalFile = ({ id }) => {
                 const responseData = await response.json();
                 setFormData({
                     ...formData,
-                    [fileKey]: responseData,
+                    image: responseData,
                 });
-                console.log(responseData, 'lklkklk');
                 Swal.fire({
                     icon: 'success',
                     title: 'File uploaded successfully!',
@@ -58,7 +67,6 @@ const ModalFile = ({ id }) => {
                         window.location.reload();
                     }, 2000);
                 });
-                // console.log('sukses');
             } else {
                 console.error('File upload failed');
             }
@@ -74,7 +82,7 @@ const ModalFile = ({ id }) => {
                 type="button"
                 className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-xs px-3 py-1.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
             >
-                INPUT BUKTI
+                INPUT GAMBAR
             </button>
             <div className={`fixed inset-0 z-50 flex items-center justify-center ${modalOpen ? 'backdrop-filter backdrop-blur-md' : 'hidden'} ${modalOpen ? 'bg-opacity-40 bg-gray-300' : ''}`}>
                 <div className="relative p-4 w-full max-w-md max-h-full mx-auto my-32">
@@ -106,7 +114,7 @@ const ModalFile = ({ id }) => {
                                 <span className="sr-only">Close modal</span>
                             </button>
                         </div>
-                        <form className="p-4 md:p-5" onSubmit={(e) => handleSubmit('file', e, id)}>
+                        <form className="p-4 md:p-5" onSubmit={handleSubmit}>
                             <div className="grid gap-4 mb-4">
                                 <div>
                                     <label
