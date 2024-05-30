@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getKpi } from "@/store/actionCreators";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom"
-import ReactHtmlTableToExcel from 'react-html-table-to-excel';
+import * as XLSX from 'xlsx';
 
 
 export function DataMember() {
@@ -112,6 +112,14 @@ export function DataMember() {
     statusValue = 20;
   }
 
+  const exportToExcel = () => {
+    const table = document.querySelector('table');
+    const ws = XLSX.utils.table_to_sheet(table);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    XLSX.writeFile(wb, `kpi.xlsx`);
+};
+
   return (
     <div className="mt-12 mb-8 flex flex-col gap-12">
       <Card>
@@ -119,19 +127,13 @@ export function DataMember() {
           <Typography variant="h6" color="white">
             KPI
           </Typography>
-          <Button
-            variant="outlined"
-            color="green"
+          <button
+            className="shadow-lg shadow-brown-800/80 rounded-lg gradient text-white px-4 py-2 text-sm rounded font-medium focus:ring ring-black ring-opacity-10 gradient element-to-rotate"
+            onClick={exportToExcel}
+            style={{ backgroundColor: '#594545', marginTop: '10px' }}
           >
-            <ReactHtmlTableToExcel
-              id="test-table-xls-button"
-              className="btn"
-              table="table-to-xls"
-              filename="kpixls"
-              sheet="tablexls"
-              buttonText="Export to Excel"
-            />
-          </Button>
+            Export to Excel
+          </button>
         </CardHeader>
         <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
           <div className="flex flex-col md:flex-row md:flex-wrap justify-center items-center space-y-4 md:space-y-0 md:space-x-4 p-4">
@@ -249,9 +251,7 @@ export function DataMember() {
             </button>
           </div>
           <div className="overflow-x-auto">
-            <table
-              id="table-to-xls"
-              className="w-full min-w-[640px] table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <table className="w-full min-w-[640px] table-auto text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                   {["NO", "KODE PRODUK", "ENTRY DATE", "STATUS DATE", "TUJUAN", "SHIFT", "STATUS", "KPI"].map((el, index) => (
