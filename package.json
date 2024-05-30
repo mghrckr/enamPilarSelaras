@@ -18,10 +18,10 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
     "prop-types": "15.8.1",
-    "react": "18.2.0",
+    "react": "^15.7.0",
     "react-apexcharts": "1.4.1",
     "react-datetime": "^3.2.0",
-    "react-dom": "18.2.0",
+    "react-dom": "^15.7.0",
     "react-html-table-to-excel": "^2.0.0",
     "react-icons": "^5.0.1",
     "react-redux": "^9.0.4",
@@ -32,8 +32,8 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@types/react": "18.2.31",
-    "@types/react-dom": "18.2.14",
+    "@types/react": "15.7.0",
+    "@types/react-dom": "15.7.0",
     "@vitejs/plugin-react": "4.1.0",
     "autoprefixer": "10.4.16",
     "postcss": "8.4.31",
