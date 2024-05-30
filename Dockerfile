@@ -15,7 +15,7 @@ FROM node:22-alpine AS PRODUCTION_IMAGE
 COPY --from=BUILD_IMAGE /app/dist/ /app/dist/
 WORKDIR /app
 
-EXPOSE 4137
+EXPOSE 4173
 
 COPY package.json .
 COPY vite.config.js .
