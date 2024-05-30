@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json /app/
 COPY vite.config.js /app/
 
-RUN npm install
+RUN npm install --force
 
 COPY . /app/
 
